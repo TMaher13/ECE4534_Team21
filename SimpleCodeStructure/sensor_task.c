@@ -19,10 +19,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-// Sensor includes
-#include <sensor_thread_queue.h>
-#include <sensor_thread_state.h>
-
 
 void *sensorThread(void *arg0) {
 
@@ -33,12 +29,13 @@ void *sensorThread(void *arg0) {
         if(receiveMsg(&myStruct))
             // Return error
 
+
     }
 
 }
 
 
-int receiveMsg(sensorStruct *rcv) {
+int receiveMsg(sensorQueueStruct *rcv) {
 
     xQueueReceive( xQueue, &ulReceivedValue, portMAX_DELAY );
 }

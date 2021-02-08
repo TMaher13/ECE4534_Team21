@@ -7,18 +7,13 @@
 #ifndef SENSOR_TASK
 #define SENSOR_TASK
 
-struct sensorStruct {
-
-    char *msg;
-
-    int error;
-
-};
+#include <sensor_thread_queue.h>
+#include <sensor_thread_state.h>
 
 
 void *sensorThread(void *arg0);
 
-int receiveMsg(sensorStruct *rcv);
+int receiveMsg(sensorQueueStruct *rcv);
 
 
 #include <sensor_task.c>

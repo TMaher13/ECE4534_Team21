@@ -46,7 +46,7 @@
 #include <FreeRTOS.h>
 #include <task.h>
 
-#include <sensor_task.h>
+#include <SimpleCodeStructure/sensor_task.h>
 
 #include <ti/drivers/Board.h>
 
