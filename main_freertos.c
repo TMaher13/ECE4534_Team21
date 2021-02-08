@@ -46,8 +46,6 @@
 #include <FreeRTOS.h>
 #include <task.h>
 
-#include <SimpleCodeStructure/sensor_task.h>
-
 #include <ti/drivers/Board.h>
 
 extern void *sensorThread(void *arg0);
@@ -58,10 +56,11 @@ extern void *sensorThread(void *arg0);
 /*
  *  ======== main ========
  */
-int main(void) {
-    pthread_t           sensor_thread;
-    pthread_attr_t      sensor_attrs;
-    struct sched_param  sensorPriParam;
+int main(void)
+{
+    pthread_t           thread;
+    pthread_attr_t      attrs;
+    struct sched_param  priParam;
     int                 retc;
 
     /* initialize the system locks */
@@ -72,24 +71,23 @@ int main(void) {
     Board_init();
 
     /* Initialize the attributes structure with default values */
-    pthread_attr_init(&sensor_attrs);
+    pthread_attr_init(&attrs);
 
     /* Set priority, detach state, and stack size attributes */
-    sensorPriParam.sched_priority = 2;
-    retc = pthread_attr_setschedparam(&sensor_attrs, &sensorPriParam);
-    retc |= pthread_attr_setdetachstate(&sensor_attrs, PTHREAD_CREATE_DETACHED);
-    retc |= pthread_attr_setstacksize(&sensor_attrs, THREADSTACKSIZE);
+    priParam.sched_priority = 1;
+    retc = pthread_attr_setschedparam(&attrs, &priParam);
+    retc |= pthread_attr_setdetachstate(&attrs, PTHREAD_CREATE_DETACHED);
+    retc |= pthread_attr_setstacksize(&attrs, THREADSTACKSIZE);
     if (retc != 0) {
-        // handle sensor stack failed to initialize
-    }
-    retc = pthread_create(&sensor_thread, &sensor_attrs, sensorThread, NULL);
-    if (retc != 0) {
-        // handle sensor task failed to create
+        /* failed to set attributes */
+        while (1) {}
     }
 
-    /* Create uart_thread_queue */
-
-    /* Create any other task threads here */
+    retc = pthread_create(&thread, &attrs, sensorThread, NULL);
+    if (retc != 0) {
+        /* pthread_create() failed */
+        while (1) {}
+    }
 
     /* Start the FreeRTOS scheduler */
     vTaskStartScheduler();
