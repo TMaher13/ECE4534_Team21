@@ -1,1 +1,6 @@
 Debug*
+
+.launches
+.launches/*
+
+project.log

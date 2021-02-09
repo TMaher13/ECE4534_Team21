@@ -11,6 +11,6 @@
 
 int sensorFSM(void *sensorMsg);
 
-#include <SimpleCodeStructure/sensor_thread_state.c>
+#include <sensor_thread_state.c>
 
 #endif

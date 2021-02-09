@@ -42,13 +42,16 @@
 /* POSIX Header files */
 #include <pthread.h>
 
+#include <ti/drivers/GPIO.h>
+#include "ti_drivers_config.h"
+
 /* RTOS header files */
 #include <FreeRTOS.h>
 #include <task.h>
 
 #include <ti/drivers/Board.h>
 
-extern void *sensorThread(void *arg0);
+extern int createSensorThread(int threadStackSize, int prio);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE   1024
@@ -56,12 +59,7 @@ extern void *sensorThread(void *arg0);
 /*
  *  ======== main ========
  */
-int main(void)
-{
-    pthread_t           thread;
-    pthread_attr_t      attrs;
-    struct sched_param  priParam;
-    int                 retc;
+int main(void) {
 
     /* initialize the system locks */
 #ifdef __ICCARM__
@@ -70,23 +68,14 @@ int main(void)
 
     Board_init();
 
-    /* Initialize the attributes structure with default values */
-    pthread_attr_init(&attrs);
+    GPIO_init();
 
-    /* Set priority, detach state, and stack size attributes */
-    priParam.sched_priority = 1;
-    retc = pthread_attr_setschedparam(&attrs, &priParam);
-    retc |= pthread_attr_setdetachstate(&attrs, PTHREAD_CREATE_DETACHED);
-    retc |= pthread_attr_setstacksize(&attrs, THREADSTACKSIZE);
-    if (retc != 0) {
-        /* failed to set attributes */
-        while (1) {}
-    }
+    GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
 
-    retc = pthread_create(&thread, &attrs, sensorThread, NULL);
-    if (retc != 0) {
-        /* pthread_create() failed */
-        while (1) {}
+    GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_OFF);
+
+    if(!createSensorThread(THREADSTACKSIZE, 1)) {
+        GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
     }
 
     /* Start the FreeRTOS scheduler */

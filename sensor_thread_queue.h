@@ -19,6 +19,6 @@ int readSensorQueue(QueueHandle_t handle, void *data, bool blocking);
 
 int writeSesnorQueue(QueueHandle_t handle, void *data, bool blocking);
 
-#include <SimpleCodeStructure/sensor_thread_queue.c>
+#include <sensor_thread_queue.c>
 
 #endif
