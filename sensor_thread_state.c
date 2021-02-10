@@ -7,12 +7,15 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include <queue_structs.h>
 
 #include <FreeRTOS.h>
 #include <task.h>
 #include <queue.h>
+
+extern writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data, bool blocking);
 
 
 int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
@@ -46,10 +49,10 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
 
                 uartMsg = malloc(sizeof(char) * 32);
 
-                sprintf(uartMsg, "Avg = %dmm; Time = %dms\n", avg, sensorMsg->value);
+                sprintf(uartMsg, "Avg = %0.2fmm; Time = %dms\n", avg, sensorMsg->value);
                 uart.msg = uartMsg;
 
-                uartQueueRet = writeUARTQueue(uart_handle, uart, true);
+                uartQueueRet = writeUARTQueue(uart_handle, &uart, true);
                 if(uartQueueRet != pdPASS) {
                     // error handling
                 }
@@ -68,7 +71,7 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
                 sprintf(uartMsg, "Sensor %d = %dmm\n", sensorCount, sensorMsg->value);
                 uart.msg = uartMsg;
 
-                uartQueueRet = writeUARTQueue(uart_handle, uart, true);
+                uartQueueRet = writeUARTQueue(uart_handle, &uart, true);
                 if(uartQueueRet != pdPASS) {
                     // error handling
                 }

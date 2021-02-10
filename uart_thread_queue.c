@@ -29,7 +29,7 @@ QueueHandle_t createUARTQueue(unsigned int queueLen, unsigned int itemSize) {
     return xQueueCreate(queueLen, itemSize);
 }
 
-BaseType_t readUARTQueue(QueueHandle_t handle, struct sensorQueueStruct *data, bool blocking) {
+BaseType_t readUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data, bool blocking) {
 
     BaseType_t ret;
     BaseType_t higherWoken = pdFALSE;
@@ -48,7 +48,7 @@ BaseType_t readUARTQueue(QueueHandle_t handle, struct sensorQueueStruct *data, b
     return ret;
 }
 
-BaseType_t writeUARTQueue(QueueHandle_t handle, struct sensorQueueStruct *data, bool blocking) {
+BaseType_t writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data, bool blocking) {
 
     BaseType_t ret;
     BaseType_t higherWoken = pdFALSE;
