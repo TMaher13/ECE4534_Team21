@@ -20,6 +20,8 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
     static int sensorTotal = 0, sensorCount = 0;
     static int fsmState = 0; // 0 for INIT_AVERAGE, 1 for UPDATE_AVERAGE
 
+    BaseType_t uartQueueRet;
+    struct uartQueueStruct uart;
     char *uartMsg;
     double avg;
 
@@ -45,14 +47,16 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
                 uartMsg = malloc(sizeof(char) * 32);
 
                 sprintf(uartMsg, "Avg = %dmm; Time = %dms\n", avg, sensorMsg->value);
-
-                struct uartQueueStruct uart;
                 uart.msg = uartMsg;
 
-                // send to uart queue
+                uartQueueRet = writeUARTQueue(uart_handle, uart, true);
+                if(uartQueueRet != pdPASS) {
+                    // error handling
+                }
 
                 sensorTotal = 0;
                 sensorCount = 0;
+                fsmState = 0;
             }
             else if(sensorMsg->messageType == TIMER70_MESSAGE) {
 
@@ -61,12 +65,13 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
                 sensorTotal += sensorMsg->value;
                 sensorCount++;
 
-                sprintf(uartMsg, "Sensor = %0.2f\n", sensorMsg->value);
-
-                struct uartQueueStruct uart;
+                sprintf(uartMsg, "Sensor %d = %dmm\n", sensorCount, sensorMsg->value);
                 uart.msg = uartMsg;
 
-                // send to uart queue;
+                uartQueueRet = writeUARTQueue(uart_handle, uart, true);
+                if(uartQueueRet != pdPASS) {
+                    // error handling
+                }
 
             }
             else

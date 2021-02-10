@@ -68,7 +68,7 @@ void *sensorThread(void *arg0) {
 
     for(;;) {
 
-        if(readSensorQueue( ((struct QueueHandles*)arg0)->sensor_handle, sensorData, true) == pdFALSE)
+        if(readSensorQueue( ((struct QueueHandles*)arg0)->sensor_handle, sensorData) == pdFALSE)
             // Return error
             break;
 
