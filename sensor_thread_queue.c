@@ -17,34 +17,19 @@
 #include <task.h>
 #include <queue.h>
 
+#include <queue_structs.h>
+
 QueueHandle_t createSensorQueue(unsigned int queueLen, unsigned int itemSize) {
 
     return xQueueCreate(queueLen, itemSize);
 }
 
-int readSensorQueue(QueueHandle_t handle, void *data, bool blocking) {
+BaseType_t readSensorQueue(QueueHandle_t handle, struct sensorQueueStruct *data) {
 
-    if(blocking) {
-
-    }
-    else {
-
-    }
-
-    return 0;
+    return xQueueReceive(handle, data, 100);
 }
 
-BaseType_t writeSensorQueue(QueueHandle_t handle, void *data, bool blocking) {
+BaseType_t writeSensorQueue(QueueHandle_t handle, struct sensorQueueStruct *data) {
 
-    BaseType_t ret;
-    BaseType_t higherWoken;
-
-    if(blocking) {
-        ret = xQueueSend(handle, data, higherWoken);
-    }
-    else {
-        ret = xQueueSendFromISR(handle, data, &higherWoken);
-    }
-
-    return ret;
+    return xQueueSend(handle, data, 100);
 }

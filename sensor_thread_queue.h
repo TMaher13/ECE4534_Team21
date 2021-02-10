@@ -13,11 +13,13 @@
 #include <task.h>
 #include <queue.h>
 
+#include <queue_structs.h>
+
 QueueHandle_t createSensorQueue(unsigned int queueLen, unsigned int itemSize);
 
-int readSensorQueue(QueueHandle_t handle, void *data, bool blocking);
+BaseType_t readSensorQueue(QueueHandle_t handle, struct sensorQueueStruct *data);
 
-int writeSesnorQueue(QueueHandle_t handle, void *data, bool blocking);
+BaseType_t writeSesnorQueue(QueueHandle_t handle, struct sensorQueueStruct *data);
 
 #include <sensor_thread_queue.c>
 

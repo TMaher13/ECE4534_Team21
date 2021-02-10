@@ -7,26 +7,9 @@
 #ifndef SENSOR_TASK
 #define SENSOR_TASK
 
-#include <sensor_thread_queue.h>
-#include <sensor_thread_state.h>
-
-struct sensorQueueStruct {
-
-    char *msg;
-
-    int time;
-    int dist;
-
-    int error;
-
-};
-
 void *sensorThread(void *arg0);
 
-int createSensorThread(int threadStackSize, int prio);
-
-int receiveMsg(void *rcv);
-
+int createSensorThread(QueueHandle_t sensor_handle, QueueHandle_t uart_handle, int threadStackSize, int prio);
 
 #include <sensor_task.c>
 
