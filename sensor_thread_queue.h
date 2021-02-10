@@ -13,8 +13,6 @@
 #include <task.h>
 #include <queue.h>
 
-QueueHandle_t sensor_handle;
-
 #include <queue_structs.h>
 
 

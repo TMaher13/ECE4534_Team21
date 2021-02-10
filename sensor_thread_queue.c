@@ -17,7 +17,9 @@
 #include <task.h>
 #include <queue.h>
 
-#include "sensor_thread_queue.h"
+//#include "sensor_thread_queue.h"
+
+extern QueueHandle_t sensor_handle;
 
 #include <queue_structs.h>
 
@@ -44,11 +46,10 @@ BaseType_t writeSensorQueueCallback(const void *pvItemToQueue)
 
     res = xQueueSendFromISR(sensor_handle, pvItemToQueue, &xHigherPriorityTaskWoken);
 
-    if( xHigherPriorityTaskWoken )
-        {
-            /* Actual macro used here is port specific. */
-            taskYIELD_FROM_ISR ();
-        }
+    if( xHigherPriorityTaskWoken ) {
+        /* Actual macro used here is port specific. */
+        taskYIELD ();
+    }
 
     return res;
 }

@@ -27,42 +27,17 @@
 QueueHandle_t createUARTQueue(unsigned int queueLen, unsigned int itemSize) {
 
     return xQueueCreate(queueLen, itemSize);
+
 }
 
-BaseType_t readUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data, bool blocking) {
+BaseType_t readUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data) {
 
-    BaseType_t ret;
-    BaseType_t higherWoken = pdFALSE;
-    TickType_t ticks = 0;
+    return xQueueReceive(handle, data, 100);
 
-    if(blocking) {
-        ret = xQueueReceive(handle, data, ticks);
-    }
-    else {
-        ret = xQueueReceiveFromISR(handle, data, &higherWoken);
-
-        if(higherWoken == pdTRUE)
-            taskYIELD();
-    }
-
-    return ret;
 }
 
-BaseType_t writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data, bool blocking) {
+BaseType_t writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data) {
 
-    BaseType_t ret;
-    BaseType_t higherWoken = pdFALSE;
-    TickType_t ticks = 0;
+    return xQueueSend(handle, data, 100);
 
-    if(blocking) {
-        ret = xQueueSend(handle, data, ticks);
-    }
-    else {
-        ret = xQueueSendFromISR(handle, data, &higherWoken);
-
-        if(higherWoken == pdTRUE)
-            taskYIELD();
-    }
-
-    return ret;
 }

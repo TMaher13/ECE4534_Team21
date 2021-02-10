@@ -17,9 +17,11 @@ void *uart_task(void *argv);
 
 int createUARTThread(int threadStackSize, int prio);
 
-char *message[] sub_uart_recv()
+char *message[] sub_uart_recv();
 
-int sub_uart_send(char *message[]);
+void *uart_recv_task(void *argv);
+
+int sub_uart_send(char *message);
 
 
 #include <uart_thread.c>

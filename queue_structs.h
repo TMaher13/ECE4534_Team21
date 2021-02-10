@@ -1,3 +1,7 @@
+
+#ifndef QUEUE_STRUCTS
+#define QUEUE_STRUCTS
+
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -19,3 +23,6 @@ struct uartQueueStruct {
     char* msg;
 
 };
+
+
+#endif
