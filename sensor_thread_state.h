@@ -7,9 +7,13 @@
 #ifndef SENSOR_THREAD_STATE
 #define SENSOR_THREAD_STATE
 
-//#include <SimpleCodeStructure/uart_thread_queue.h>
+//#include <queue_structs.h>
 
-int sensorFSM(void *sensorMsg);
+#include <FreeRTOS.h>
+#include <task.h>
+#include <queue.h>
+
+int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg);
 
 #include <sensor_thread_state.c>
 

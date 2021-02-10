@@ -5,35 +5,82 @@
  */
 
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+#include <queue_structs.h>
+
+#include <FreeRTOS.h>
+#include <task.h>
+#include <queue.h>
+
+extern writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data, bool blocking);
 
 
-int sensorFSM(void *sensorMsg) {
+int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
 
     static int sensorTotal = 0, sensorCount = 0;
     static int fsmState = 0; // 0 for INIT_AVERAGE, 1 for UPDATE_AVERAGE
 
-    /*switch(fsmState) {
+    BaseType_t uartQueueRet;
+    struct uartQueueStruct uart;
+    char *uartMsg;
+    double avg;
 
-        case 0:
-            if(!strcmp(sensorMsg->msg, "TIMER500_MESSAGE"))
+    switch(fsmState) {
+
+        case 0: // INIT_AVERAGE
+            if(sensorMsg->messageType == TIMER500_MESSAGE)
                 fsmState = 1;
-            else if(!strcmp(sensorMsg->msg, "TIMER70_MESSAGE"))
+            else if(sensorMsg->messageType == TIMER70_MESSAGE)
                 fsmState = 0;
             else
-                // handle error
+                return 1;
             break;
 
-        case 1:
-            if(!strcmp(sensorMsg->msg, "TIMER500_MESSAGE"))
-                //do something
-                fsmState++;
-            else if(!strcmp(sensorMsg->msg, "TIMER70_MESSAGE"))
-                // do something
-                fsmState++;
+        case 1: // UPDATE_AVERAGE
+            if(sensorMsg->messageType == TIMER500_MESSAGE) {
+
+                if(sensorCount != 0)
+                    avg = sensorTotal / sensorCount;
+                else
+                    avg = 0.0;
+
+                uartMsg = malloc(sizeof(char) * 32);
+
+                sprintf(uartMsg, "Avg = %0.2fmm; Time = %dms\n", avg, sensorMsg->value);
+                uart.msg = uartMsg;
+
+                uartQueueRet = writeUARTQueue(uart_handle, &uart, true);
+                if(uartQueueRet != pdPASS) {
+                    // error handling
+                }
+
+                sensorTotal = 0;
+                sensorCount = 0;
+                fsmState = 0;
+            }
+            else if(sensorMsg->messageType == TIMER70_MESSAGE) {
+
+                uartMsg = malloc(sizeof(char) * 32);
+
+                sensorTotal += sensorMsg->value;
+                sensorCount++;
+
+                sprintf(uartMsg, "Sensor %d = %dmm\n", sensorCount, sensorMsg->value);
+                uart.msg = uartMsg;
+
+                uartQueueRet = writeUARTQueue(uart_handle, &uart, true);
+                if(uartQueueRet != pdPASS) {
+                    // error handling
+                }
+
+            }
             else
-                // handle error
+                return 2;
             break;
-    }*/
+    }
 
     return 0;
 
