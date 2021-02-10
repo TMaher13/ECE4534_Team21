@@ -39,19 +39,20 @@
 #include <DLib_Threads.h>
 #endif
 
-/* POSIX Header files */
-#include <pthread.h>
-
-#include <ti/drivers/GPIO.h>
-#include "ti_drivers_config.h"
-
 /* RTOS header files */
 #include <FreeRTOS.h>
 #include <task.h>
+#include <queue.h>
 
+#include <ti/drivers/GPIO.h>
+#include <ti_drivers_config.h>
 #include <ti/drivers/Board.h>
 
-extern int createSensorThread(int threadStackSize, int prio);
+#include <queue_structs.h>
+
+extern int createSensorThread(QueueHandle_t sensor_handle, QueueHandle_t uart_handle, int threadStackSize, int prio);
+
+extern QueueHandle_t createSensorQueue(unsigned int queueLen, unsigned int itemSize);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE   1024
@@ -68,15 +69,17 @@ int main(void) {
 
     Board_init();
 
-    GPIO_init();
+    QueueHandle_t sensor_handle = createSensorQueue(10, sizeof(struct sensorQueueStruct));
+    //QueueHandle_t uart_handle = createUartQueue(10, sizeof(struct uartQueueStruct));
+    QueueHandle_t uart_handle;
 
-    GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    if(sensor_handle == NULL)
+        return (1);
 
-    GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_OFF);
-
-    if(!createSensorThread(THREADSTACKSIZE, 1)) {
+    /*if(!createSensorThread(sensor_handle, THREADSTACKSIZE, 1)) {
         GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
-    }
+    }*/
+    createSensorThread(sensor_handle, uart_handle, THREADSTACKSIZE, 1);
 
     /* Start the FreeRTOS scheduler */
     vTaskStartScheduler();
