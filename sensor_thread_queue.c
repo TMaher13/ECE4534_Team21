@@ -17,6 +17,8 @@
 #include <task.h>
 #include <queue.h>
 
+#include "sensor_thread_queue.h"
+
 QueueHandle_t createSensorQueue(unsigned int queueLen, unsigned int itemSize) {
 
     return xQueueCreate(queueLen, itemSize);
@@ -47,4 +49,13 @@ BaseType_t writeSensorQueue(QueueHandle_t handle, void *data, bool blocking) {
     }
 
     return ret;
+}
+
+BaseType_t writeSensorQueueCallback(const void *pvItemToQueue)
+{
+    BaseType_t xHigherPriorityTaskWoken;
+
+    xHigherPriorityTaskWoken = pdFALSE;
+
+    return xQueueSendFromISR(sensor_handle, pvItemToQueue, &xHigherPriorityTaskWoken);
 }
