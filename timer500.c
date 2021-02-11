@@ -12,13 +12,16 @@
 #include <queue.h>
 
 #include <queue_structs.h>
-
+#include <debug.h>
 #include <ti_drivers_config.h>
 
 extern const uint32_t          TIMER500_PERIOD_CONST;
 #define TIMER500_PERIOD        500000
 
 extern BaseType_t writeSensorQueueCallback(const void *pvItemToQueue);
+
+extern void dbgEvent(unsigned int event);
+extern void fatalError(unsigned int event);
 
 void timer500Callback(Timer_Handle myHandle, int_fast16_t status);
 
@@ -44,11 +47,13 @@ void timer500Init()
 
     if (timer500 == NULL) {
         /* Failed to initialized timer */
+        fatalError(TIMER500_INIT_FATAL_ERROR);
         while (1) {}
     }
 
     if (Timer_start(timer500) == Timer_STATUS_ERROR) {
         /* Failed to start timer */
+        fatalError(TIMER500_START_FATAL_ERROR);
         while (1) {}
     }
 
@@ -66,6 +71,7 @@ uint32_t convertTicks2ms(TickType_t ticks)
  */
 void timer500Callback(Timer_Handle myHandle, int_fast16_t status)
 {
+    dbgEvent(ENTER_TIMER500_CALLBACK);
     static uint32_t lastTime = 0;
 
     TickType_t tickCount = xTaskGetTickCountFromISR();
@@ -76,5 +82,6 @@ void timer500Callback(Timer_Handle myHandle, int_fast16_t status)
 
     struct sensorQueueStruct m = {TIMER500_MESSAGE, msec};
     writeSensorQueueCallback(&m);
+    dbgEvent(LEAVE_TIMER500_CALLBACK);
 }
 

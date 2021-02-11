@@ -52,6 +52,7 @@
 
 extern void timer500Init();
 extern void timer70Init();
+extern void debugInit();
 
 extern int createSensorThread(int threadStackSize, int prio);
 extern int createUARTThread(int threadStackSize, int prio);
@@ -76,6 +77,7 @@ int main(void) {
 #endif
 
     Board_init();
+    debugInit();
 
     sensor_handle = createSensorQueue(10, sizeof(struct sensorQueueStruct));
     uart_handle = createUARTQueue(10, sizeof(struct uartQueueStruct));

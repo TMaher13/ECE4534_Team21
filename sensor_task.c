@@ -23,6 +23,7 @@
 #include <ti_drivers_config.h>
 
 #include <queue_structs.h>
+#include <debug.h>
 //#include <sensor_thread_queue.h>
 //#include <sensor_thread_state.h>
 
@@ -33,6 +34,9 @@ extern int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensor
 
 extern QueueHandle_t sensor_handle;
 
+extern void dbgEvent(unsigned int event);
+extern void fatalError(unsigned int event);
+
 // FreeRTOS includes
 #include <FreeRTOS.h>
 #include <task.h>
@@ -40,6 +44,8 @@ extern QueueHandle_t sensor_handle;
 
 
 void *sensorThread(void *arg0) {
+
+dbgEvent(ENTER_SENSOR_TASK);
 
 #if 0
     // For light debugging
@@ -70,20 +76,23 @@ void *sensorThread(void *arg0) {
 
     //GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
 
+    dbgEvent(BEFORE_SENSOR_LOOP);
+
     for(;;) {
 
+        dbgEvent(BEFORE_READ_SENSOR_QUEUE);
         while(readSensorQueue( sensor_handle, &sensorData) != pdTRUE) {
             //GPIO_toggle(CONFIG_GPIO_LED_0);
             //vTaskDelay(1000);
         }
-
+        dbgEvent(AFTER_READ_SENSOR_QUEUE);
 
         fsm_ret = sensorFSM( sensor_handle, &sensorData );
         if(fsm_ret == 1)
-            // error
+            fatalError(FSM_FATAL_ERROR1);
             return NULL;
         else if(fsm_ret == 2)
-            // error
+            fatalError(FSM_FATAL_ERROR2);
             return NULL;
     }
 
@@ -108,12 +117,14 @@ int createSensorThread(int threadStackSize, int prio) {
     retc |= pthread_attr_setdetachstate(&attrs, PTHREAD_CREATE_DETACHED);
     retc |= pthread_attr_setstacksize(&attrs, threadStackSize);
     if (retc != 0) {
+        fatalError(SENSOR_STACK_FATAL_ERROR);
         return -1; // Stack initialization failed
     }
 
 
     retc = pthread_create(&thread, &attrs, sensorThread, NULL);
     if (retc != 0) {
+        fatalError(SENSOR_THREAD_FATAL_ERROR);
         return -2; // Thread/task creation failed
     }
 

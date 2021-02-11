@@ -49,15 +49,19 @@ void fatalError(unsigned int event){
 
     //must blink an LED
     while(1){
-        errorLED();
+        //errorLED();
+        GPIO_toggle(CONFIG_GPIO_LED_0);
+        vTaskDelay(1000);
     }
 
     //error code should be last thing written to GPIO lines
 }
 
-void dbgGPIOWrite(unsigned int event){
-    //output to set of 8 GPIO lines
-    //while writing, set 8th bit high, after writing, set 8th bit low
+void debugInit(){
+    GPIO_init();
+
+    /* Configure the LED pin */
+    GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
 
     /* Configure the GPIO pins */
     GPIO_setConfig(CONFIG_GPIO_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
@@ -68,6 +72,12 @@ void dbgGPIOWrite(unsigned int event){
     GPIO_setConfig(CONFIG_GPIO_5, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_setConfig(CONFIG_GPIO_6, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_setConfig(CONFIG_GPIO_7, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+
+    /* Turn off user LED */
+    GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_OFF);
+}
+
+void dbgGPIOWrite(unsigned int event){
 
     //Set 8th bit high while writing
     GPIO_write(CONFIG_GPIO_7, CONFIG_GPIO_OUT_HIGH);
@@ -101,11 +111,6 @@ void errorLED()
     GPIO_init();
     Timer_init();
 
-    /* Configure the LED pin */
-    GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-
-    /* Turn off user LED */
-    GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_OFF);
 
     /*
      * Setting up the timer in continuous callback mode that calls the callback
@@ -117,7 +122,7 @@ void errorLED()
     params.timerMode = Timer_CONTINUOUS_CALLBACK;
     params.timerCallback = timerCallback;
 
-    timer0 = Timer_open(CONFIG_TIMER_0, &params);
+    timer0 = Timer_open(CONFIG_TIMER_2, &params);
 
     if (timer0 == NULL) {
         /* Failed to initialized timer */
