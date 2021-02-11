@@ -120,11 +120,13 @@ int createUARTThread(int threadStackSize, int prio) {
     retc |= pthread_attr_setdetachstate(&attrs, PTHREAD_CREATE_DETACHED);
     retc |= pthread_attr_setstacksize(&attrs, threadStackSize);
     if (retc != 0) {
+        fatalError(UART_STACK_FATAL_ERROR);
         return -1; // Stack initialization failed
     }
 
     retc = pthread_create(&thread, &attrs, uart_task, NULL);
     if (retc != 0) {
+        fatalError(UART_THREAD_FATAL_ERROR);
         return -2; // Thread/task creation failed
     }
 

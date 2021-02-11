@@ -47,6 +47,8 @@
 #define WRITE_UART_QUEUE_FATAL_ERROR_TIMER70 0X29
 #define ADC_FATAL_ERROR 0x2A
 #define UART_INIT_FATAL_ERROR 0x2B
+#define UART_STACK_FATAL_ERROR 0x2C
+#define UART_THREAD_FATAL_ERROR 0x2D
 
 void dbgEvent(unsigned int event);
 void fatalError(unsigned int event);
