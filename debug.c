@@ -101,13 +101,13 @@ void dbgGPIOWrite(unsigned int event){
     //Set 8th bit low after writing
     GPIO_write(CONFIG_GPIO_7, CONFIG_GPIO_OUT_HIGH);
 }
-
+ /*
 void errorLED()
 {
     Timer_Handle timer0;
     Timer_Params params;
 
-    /* Call driver init functions */
+    /* Call driver init functions
     GPIO_init();
     Timer_init();
 
@@ -115,7 +115,7 @@ void errorLED()
     /*
      * Setting up the timer in continuous callback mode that calls the callback
      * function every 500,000 microseconds, or 0.5 seconds.
-     */
+
     Timer_Params_init(&params);
     params.period = 500000;
     params.periodUnits = Timer_PERIOD_US;
@@ -125,17 +125,18 @@ void errorLED()
     timer0 = Timer_open(CONFIG_TIMER_2, &params);
 
     if (timer0 == NULL) {
-        /* Failed to initialized timer */
+        /* Failed to initialized timer
         while (1) {}
     }
 
     if (Timer_start(timer0) == Timer_STATUS_ERROR) {
-        /* Failed to start timer */
+        /* Failed to start timer
         while (1) {}
     }
 
     return;
 }
+*/
 
 /*
  * LED Callback to toggle the LED every .5 seconds

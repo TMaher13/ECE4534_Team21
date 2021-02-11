@@ -88,12 +88,14 @@ dbgEvent(ENTER_SENSOR_TASK);
         dbgEvent(AFTER_READ_SENSOR_QUEUE);
 
         fsm_ret = sensorFSM( sensor_handle, &sensorData );
-        if(fsm_ret == 1)
+        if(fsm_ret == 1){
             fatalError(FSM_FATAL_ERROR1);
             return NULL;
-        else if(fsm_ret == 2)
+        }
+        else if(fsm_ret == 2){
             fatalError(FSM_FATAL_ERROR2);
             return NULL;
+        }
     }
 
     return NULL;
