@@ -74,10 +74,7 @@ uint32_t convert2mm(uint16_t adcValue)
 void timer70Callback(Timer_Handle myHandle, int_fast16_t status)
 {
     dbgEvent(ENTER_TIMER70_CALLBACK);
-<<<<<<< HEAD
-=======
 
->>>>>>> f1fbd18140d9c014afaf996ed83eaa033a399582
     int_fast16_t res;
     uint16_t adcValue;
     uint32_t mmValue;
