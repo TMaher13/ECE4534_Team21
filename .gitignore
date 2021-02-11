@@ -4,3 +4,6 @@ Debug*
 .launches/*
 
 project.log
+
+.cproject
+.ccsproject
