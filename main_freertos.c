@@ -91,7 +91,7 @@ int main(void) {
     timer500Init();
 
     createSensorThread(THREADSTACKSIZE, 1);
-    createUARTThread(THREADSTACKSIZE, 2);
+    createUARTThread(THREADSTACKSIZE, 1);
 
 
 

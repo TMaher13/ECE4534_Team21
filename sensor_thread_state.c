@@ -15,7 +15,7 @@
 #include <task.h>
 #include <queue.h>
 
-extern writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data);
+extern writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct **data);
 
 extern void dbgEvent(unsigned int event);
 extern void fatalError(unsigned int event);
@@ -26,7 +26,7 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
     static int fsmState = 0; // 0 for INIT_AVERAGE, 1 for UPDATE_AVERAGE
 
     BaseType_t uartQueueRet;
-    struct uartQueueStruct *uart;
+    struct uartQueueStruct *uart = malloc(sizeof(struct uartQueueStruct));
     char *uartMsg;
     double avg;
 
@@ -49,15 +49,14 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
                 else
                     avg = 0.0;
 
-                uartMsg = malloc(sizeof(char) * 32);
+                uartMsg = malloc(sizeof(char) * 64);
 
                 sprintf(uartMsg, "Avg = %0.2fmm; Time = %dms\n", avg, sensorMsg->value);
-                *uart->msg = uartMsg;
+                (*uart).msg = uartMsg;
 
                 dbgEvent(BEFORE_WRITE_UART_QUEUE_TIMER500);
                 uartQueueRet = writeUARTQueue(uart_handle, &uart);
                 dbgEvent(AFTER_WRITE_UART_QUEUE_TIMER500);
-
                 if(uartQueueRet != pdPASS) {
                     fatalError(WRITE_UART_QUEUE_FATAL_ERROR_TIMER500);
                 }
@@ -68,13 +67,13 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
             }
             else if(sensorMsg->messageType == TIMER70_MESSAGE) {
 
-                uartMsg = malloc(sizeof(char) * 32);
+                uartMsg = malloc(sizeof(char) * 64);
 
                 sensorTotal += sensorMsg->value;
                 sensorCount++;
 
                 sprintf(uartMsg, "Sensor %d = %dmm\n", sensorCount, sensorMsg->value);
-                *uart->msg = uartMsg;
+                (*uart).msg = uartMsg;
 
                 dbgEvent(BEFORE_WRITE_UART_QUEUE_TIMER70);
                 uartQueueRet = writeUARTQueue(uart_handle, &uart);
