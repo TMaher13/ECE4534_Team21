@@ -26,7 +26,7 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
     static int fsmState = 0; // 0 for INIT_AVERAGE, 1 for UPDATE_AVERAGE
 
     BaseType_t uartQueueRet;
-    struct uartQueueStruct uart;
+    struct uartQueueStruct *uart;
     char *uartMsg;
     double avg;
 
@@ -52,7 +52,7 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
                 uartMsg = malloc(sizeof(char) * 32);
 
                 sprintf(uartMsg, "Avg = %0.2fmm; Time = %dms\n", avg, sensorMsg->value);
-                uart.msg = uartMsg;
+                *uart->msg = uartMsg;
 
                 dbgEvent(BEFORE_WRITE_UART_QUEUE_TIMER500);
                 uartQueueRet = writeUARTQueue(uart_handle, &uart);
@@ -74,7 +74,7 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
                 sensorCount++;
 
                 sprintf(uartMsg, "Sensor %d = %dmm\n", sensorCount, sensorMsg->value);
-                uart.msg = uartMsg;
+                *uart->msg = uartMsg;
 
                 dbgEvent(BEFORE_WRITE_UART_QUEUE_TIMER70);
                 uartQueueRet = writeUARTQueue(uart_handle, &uart);

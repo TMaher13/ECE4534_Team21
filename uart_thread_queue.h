@@ -20,9 +20,9 @@
 
 QueueHandle_t createUARTQueue(unsigned int queueLen, unsigned int itemSize);
 
-int readUARTQueue(QueueHandle_t handle, void *data);
+int readUARTQueue(QueueHandle_t handle, struct uartQueueStruct **data);
 
-int writeUARTQueue(QueueHandle_t handle, void *data);
+int writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct **data);
 
 //#include <uart_thread_queue.c>
 

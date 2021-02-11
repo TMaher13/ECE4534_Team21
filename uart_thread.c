@@ -27,6 +27,7 @@
 #include <queue.h>
 
 /* Driver Header files */
+#include <ti/drivers/GPIO.h>
 #include <ti/drivers/UART.h>
 
 /* Driver configuration */
@@ -34,13 +35,26 @@
 
 extern QueueHandle_t uart_handle;
 
-extern readUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data);
-extern writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data);
+extern readUARTQueue(QueueHandle_t handle, struct uartQueueStruct **data);
+extern writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct **data);
 
 extern void dbgEvent(unsigned int event);
 extern void fatalError(unsigned int event);
 
-int sub_uart_send(char *message){
+int sub_uart_send(UART_Handle uart_send, char *message){
+
+    dbgEvent(BEFORE_WRITE_UART_QUEUE);
+    UART_writePolling(uart_send, (const void *)message, sizeof(message));
+    dbgEvent(AFTER_WRITE_UART_QUEUE);
+
+    return 1;
+
+}
+
+
+// Task used to receive strings and output them to UART (UART Send)
+void *uart_task(void *arg0) {
+    dbgEvent(ENTER_UART_TASK);
 
     UART_init();
 
@@ -60,24 +74,13 @@ int sub_uart_send(char *message){
         fatalError(UART_INIT_FATAL_ERROR);
         return -1;
     }
-    dbgEvent(BEFORE_WRITE_UART_QUEUE);
-    UART_write(uart_send, (const void *)message, sizeof(message));
-    dbgEvent(AFTER_WRITE_UART_QUEUE);
-    return 1;
-
-}
-
-
-// Task used to receive strings and output them to UART (UART Send)
-void *uart_task(void *arg0) {
-    dbgEvent(ENTER_UART_TASK);
         /*
         You will have one task whose only job is to send to the UART. It won’t interface to any other
         I/O devices (and it won’t do UART receive). It can do some processing on data to be sent. It will
         read from a single FreeRTOS queue to get the data that needs to be sent.
         Body of your UART send task:
         */
-    struct uartQueueStruct uartStruct;
+    struct uartQueueStruct *uartStruct;
 
     dbgEvent(BEFORE_UART_LOOP);
     while (1) {
@@ -86,6 +89,8 @@ void *uart_task(void *arg0) {
         dbgEvent(BEFORE_READ_UART_QUEUE);
         while(readUARTQueue(uart_handle, &uartStruct) != pdTRUE) {
             // block until we read from queue
+            GPIO_toggle(CONFIG_GPIO_LED_0);
+            vTaskDelay(1000);
         }
         dbgEvent(AFTER_READ_UART_QUEUE);
         /* 2. Do any processing you want to do, but nothing else */
@@ -95,7 +100,7 @@ void *uart_task(void *arg0) {
             /* a. Make sure that you check for errors and halt if you get any */
 
             /* b. Send all of the data received from the queue */
-        sub_uart_send(uartStruct.msg);
+        sub_uart_send(uart_send, (*uartStruct).msg);
 
         continue;
     }

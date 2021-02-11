@@ -18,12 +18,11 @@
 extern const uint32_t          TIMER500_PERIOD_CONST;
 #define TIMER500_PERIOD        500000
 
+extern void timer500Callback(Timer_Handle myHandle, int_fast16_t status);
 extern BaseType_t writeSensorQueueCallback(const void *pvItemToQueue);
 
 extern void dbgEvent(unsigned int event);
 extern void fatalError(unsigned int event);
-
-void timer500Callback(Timer_Handle myHandle, int_fast16_t status);
 
 void timer500Init()
 {

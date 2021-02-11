@@ -80,8 +80,8 @@ void *sensorThread(void *arg0) {
         dbgEvent(BEFORE_READ_SENSOR_QUEUE);
 
         while(readSensorQueue( sensor_handle, &sensorData) != pdTRUE) {
-            GPIO_toggle(CONFIG_GPIO_LED_0);
-            vTaskDelay(1000);
+            //GPIO_toggle(CONFIG_GPIO_LED_0);
+            //vTaskDelay(1000);
         }
 
         dbgEvent(AFTER_READ_SENSOR_QUEUE);

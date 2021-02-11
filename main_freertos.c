@@ -80,19 +80,18 @@ int main(void) {
     debugInit();
 
     sensor_handle = createSensorQueue(10, sizeof(struct sensorQueueStruct));
-    uart_handle = createUARTQueue(10, sizeof(struct uartQueueStruct));
+    uart_handle = createUARTQueue(10, sizeof(struct uartQueueStruct*));
 
     if(sensor_handle == NULL)
         return (1);
+    if(uart_handle == NULL)
+        return(1);
 
     timer70Init();
     timer500Init();
 
-    int i;
-    for(i=0; i<1000; i++) {}
-
     createSensorThread(THREADSTACKSIZE, 1);
-    createUARTThread(THREADSTACKSIZE, 1);
+    createUARTThread(THREADSTACKSIZE, 2);
 
 
 

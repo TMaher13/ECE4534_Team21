@@ -21,6 +21,7 @@
 #include <FreeRTOS.h>
 #include <task.h>
 #include <queue.h>
+#include <debug.h>
 
 #include <queue_structs.h>
 
@@ -30,13 +31,15 @@ QueueHandle_t createUARTQueue(unsigned int queueLen, unsigned int itemSize) {
 
 }
 
-BaseType_t readUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data) {
+BaseType_t readUARTQueue(QueueHandle_t handle, struct uartQueueStruct **data) {
+    dbgEvent(BEFORE_UART_READ_RTOS);
+    BaseType_t holder = xQueueReceive(handle, data, 100);
+    dbgEvent(AFTER_UART_READ_RTOS);
 
-    return xQueueReceive(handle, data, 100);
-
+    return holder;
 }
 
-BaseType_t writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data) {
+BaseType_t writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct **data) {
 
     return xQueueSend(handle, data, 100);
 
