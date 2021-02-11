@@ -45,7 +45,7 @@ extern void fatalError(unsigned int event);
 
 void *sensorThread(void *arg0) {
 
-dbgEvent(ENTER_SENSOR_TASK);
+    dbgEvent(ENTER_SENSOR_TASK);
 
 #if 0
     // For light debugging
@@ -69,22 +69,21 @@ dbgEvent(ENTER_SENSOR_TASK);
     struct sensorQueueStruct sensorData = {TIMER70_MESSAGE, 0};
     int fsm_ret = 0;
 
-    //GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-
-    /* Turn off user LED */
-    //GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_OFF);
-
-    //GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
-
     dbgEvent(BEFORE_SENSOR_LOOP);
+
+    GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+
+    GPIO_toggle(CONFIG_GPIO_LED_0);
 
     for(;;) {
 
         dbgEvent(BEFORE_READ_SENSOR_QUEUE);
+
         while(readSensorQueue( sensor_handle, &sensorData) != pdTRUE) {
-            //GPIO_toggle(CONFIG_GPIO_LED_0);
-            //vTaskDelay(1000);
+            GPIO_toggle(CONFIG_GPIO_LED_0);
+            vTaskDelay(1000);
         }
+
         dbgEvent(AFTER_READ_SENSOR_QUEUE);
 
         fsm_ret = sensorFSM( sensor_handle, &sensorData );
@@ -122,7 +121,6 @@ int createSensorThread(int threadStackSize, int prio) {
         fatalError(SENSOR_STACK_FATAL_ERROR);
         return -1; // Stack initialization failed
     }
-
 
     retc = pthread_create(&thread, &attrs, sensorThread, NULL);
     if (retc != 0) {
