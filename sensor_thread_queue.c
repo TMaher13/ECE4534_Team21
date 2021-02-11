@@ -39,14 +39,14 @@ BaseType_t writeSensorQueue(QueueHandle_t handle, struct sensorQueueStruct *data
     return xQueueSend(handle, data, 100);
 }
 
-BaseType_t writeSensorQueueCallback(const void *pvItemToQueue)
+BaseType_t writeSensorQueueCallback(struct sensorQueueStruct *m)
 {
     dbgEvent(ENTER_SENSOR_QUEUE_CALLBACK);
     BaseType_t res, xHigherPriorityTaskWoken;
 
     xHigherPriorityTaskWoken = pdFALSE;
 
-    res = xQueueSendFromISR(sensor_handle, pvItemToQueue, &xHigherPriorityTaskWoken);
+    res = xQueueSendFromISR(sensor_handle, m, &xHigherPriorityTaskWoken);
 
     if( xHigherPriorityTaskWoken ) {
         /* Actual macro used here is port specific. */
