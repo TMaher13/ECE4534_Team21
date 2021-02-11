@@ -99,7 +99,7 @@ void dbgGPIOWrite(unsigned int event){
     GPIO_write(CONFIG_GPIO_6, bits[6]);
 
     //Set 8th bit low after writing
-    GPIO_write(CONFIG_GPIO_7, CONFIG_GPIO_OUT_HIGH);
+    GPIO_write(CONFIG_GPIO_7, CONFIG_GPIO_OUT_LOW);
 }
  /*
 void errorLED()
