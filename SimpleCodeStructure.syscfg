@@ -74,9 +74,9 @@ Power.parkPins.$name = "ti_drivers_power_PowerCC32XXPins0";
 
 RTOS.name = "FreeRTOS";
 
-Timer1.$name         = "CONFIG_TIMER_0";
 Timer1.timerType     = "32 Bits";
-Timer1.timer.$assign = "Timer0";
+Timer1.$name         = "CONFIG_TIMER_2";
+Timer1.timer.$assign = "Timer2";
 
 Timer2.$name         = "CONFIG_TIMER_1";
 Timer2.timerType     = "32 Bits";

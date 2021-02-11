@@ -38,6 +38,6 @@ BaseType_t readUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data) {
 
 BaseType_t writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data) {
 
-    return xQueueSend(handle, data, 100);
+    return xQueueSendFromISR(handle, data, 100);
 
 }

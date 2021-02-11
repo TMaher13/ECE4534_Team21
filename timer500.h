@@ -22,4 +22,7 @@ uint32_t convertTicks2ms(TickType_t ticks);
  */
 void timer500Callback(Timer_Handle myHandle, int_fast16_t status);
 
+#include <timer500.c>
+
+
 #endif

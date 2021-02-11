@@ -40,7 +40,26 @@ extern writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data);
 extern void dbgEvent(unsigned int event);
 extern void fatalError(unsigned int event);
 
-int sub_uart_send(char *message){
+int sub_uart_send(char *message, UART_Handle uart_send){
+
+
+    dbgEvent(BEFORE_WRITE_UART_QUEUE);
+    UART_writePolling(uart_send, (const void *)message, sizeof(message));
+    dbgEvent(AFTER_WRITE_UART_QUEUE);
+    return 1;
+
+}
+
+
+// Task used to receive strings and output them to UART (UART Send)
+void *uart_task(void *arg0) {
+    dbgEvent(ENTER_UART_TASK);
+        /*
+        You will have one task whose only job is to send to the UART. It won’t interface to any other
+        I/O devices (and it won’t do UART receive). It can do some processing on data to be sent. It will
+        read from a single FreeRTOS queue to get the data that needs to be sent.
+        Body of your UART send task:
+        */
 
     UART_init();
 
@@ -60,29 +79,12 @@ int sub_uart_send(char *message){
         fatalError(UART_INIT_FATAL_ERROR);
         return -1;
     }
-    dbgEvent(BEFORE_WRITE_UART_QUEUE);
-    UART_write(uart_send, (const void *)message, sizeof(message));
-    dbgEvent(AFTER_WRITE_UART_QUEUE);
-    return 1;
 
-}
-
-
-// Task used to receive strings and output them to UART (UART Send)
-void *uart_task(void *arg0) {
-    dbgEvent(ENTER_UART_TASK);
-        /*
-        You will have one task whose only job is to send to the UART. It won’t interface to any other
-        I/O devices (and it won’t do UART receive). It can do some processing on data to be sent. It will
-        read from a single FreeRTOS queue to get the data that needs to be sent.
-        Body of your UART send task:
-        */
     struct uartQueueStruct uartStruct;
 
     dbgEvent(BEFORE_UART_LOOP);
     while (1) {
         /* 1. Blocking receive call from a single FreeRTOS queue. */
-            // THIS WILL BE A SUBROUTINE
         dbgEvent(BEFORE_READ_UART_QUEUE);
         while(readUARTQueue(uart_handle, &uartStruct) != pdTRUE) {
             // block until we read from queue
@@ -95,7 +97,7 @@ void *uart_task(void *arg0) {
             /* a. Make sure that you check for errors and halt if you get any */
 
             /* b. Send all of the data received from the queue */
-        sub_uart_send(uartStruct.msg);
+        sub_uart_send(uartStruct.msg, uart_send);
 
         continue;
     }
