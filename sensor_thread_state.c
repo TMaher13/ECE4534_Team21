@@ -26,7 +26,7 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
     static int fsmState = 0; // 0 for INIT_AVERAGE, 1 for UPDATE_AVERAGE
 
     BaseType_t uartQueueRet;
-    struct uartQueueStruct *uart;
+    struct uartQueueStruct *uart =  malloc(sizeof(struct uartQueueStruct));
     char *uartMsg;
     double avg;
 
