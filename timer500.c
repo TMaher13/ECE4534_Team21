@@ -23,26 +23,7 @@ extern BaseType_t writeSensorQueueCallback(const void *pvItemToQueue);
 extern void dbgEvent(unsigned int event);
 extern void fatalError(unsigned int event);
 
-/*
- * This callback is called every 1,000,000 microseconds, or 1 second. Because
- * the LED is toggled each time this function is called, the LED will blink at
- * a rate of once every 2 seconds.
- */
-void timer500Callback(Timer_Handle myHandle, int_fast16_t status)
-{
-    dbgEvent(ENTER_TIMER500_CALLBACK);
-    static uint32_t lastTime = 0;
-
-    TickType_t tickCount = xTaskGetTickCountFromISR();
-
-    uint32_t msec = convertTicks2ms(tickCount) - lastTime;
-    lastTime = msec;
-    //uint32_t elapsed; //= elapsedTime(msec);
-
-    struct sensorQueueStruct m = {TIMER500_MESSAGE, msec};
-    writeSensorQueueCallback(&m);
-    dbgEvent(LEAVE_TIMER500_CALLBACK);
-}
+void timer500Callback(Timer_Handle myHandle, int_fast16_t status);
 
 void timer500Init()
 {
@@ -83,5 +64,23 @@ uint32_t convertTicks2ms(TickType_t ticks)
     return ticks * 1000;
 }
 
+/*
+ * This callback is called every 1,000,000 microseconds, or 1 second. Because
+ * the LED is toggled each time this function is called, the LED will blink at
+ * a rate of once every 2 seconds.
+ */
+void timer500Callback(Timer_Handle myHandle, int_fast16_t status)
+{
+    dbgEvent(ENTER_TIMER500_CALLBACK);
+    static uint32_t lastTime = 0;
 
+    TickType_t tickCount = xTaskGetTickCountFromISR();
+
+    uint32_t msec = convertTicks2ms(tickCount) - lastTime;
+    lastTime = msec;
+
+    struct sensorQueueStruct m = {TIMER500_MESSAGE, msec};
+    writeSensorQueueCallback(&m);
+    dbgEvent(LEAVE_TIMER500_CALLBACK);
+}
 

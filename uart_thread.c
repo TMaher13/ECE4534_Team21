@@ -2,8 +2,7 @@
  * uart_thread.c
  *
  *  Created on: Feb 8, 2021
- *      Author: Connor J. Bondi
- *
+  *
  * This task will receive messages
  * containing C-strings and output them to the UART.
  */
@@ -40,26 +39,7 @@ extern writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data);
 extern void dbgEvent(unsigned int event);
 extern void fatalError(unsigned int event);
 
-int sub_uart_send(char *message, UART_Handle uart_send){
-
-
-    dbgEvent(BEFORE_WRITE_UART_QUEUE);
-    UART_writePolling(uart_send, (const void *)message, sizeof(message));
-    dbgEvent(AFTER_WRITE_UART_QUEUE);
-    return 1;
-
-}
-
-
-// Task used to receive strings and output them to UART (UART Send)
-void *uart_task(void *arg0) {
-    dbgEvent(ENTER_UART_TASK);
-        /*
-        You will have one task whose only job is to send to the UART. It won’t interface to any other
-        I/O devices (and it won’t do UART receive). It can do some processing on data to be sent. It will
-        read from a single FreeRTOS queue to get the data that needs to be sent.
-        Body of your UART send task:
-        */
+int sub_uart_send(char *message){
 
     UART_init();
 
@@ -79,7 +59,23 @@ void *uart_task(void *arg0) {
         fatalError(UART_INIT_FATAL_ERROR);
         return -1;
     }
+    dbgEvent(BEFORE_WRITE_UART_QUEUE);
+    UART_writePolling(uart_send, (const void *)message, sizeof(message));
+    dbgEvent(AFTER_WRITE_UART_QUEUE);
+    return 1;
 
+}
+
+
+// Task used to receive strings and output them to UART (UART Send)
+void *uart_task(void *arg0) {
+    dbgEvent(ENTER_UART_TASK);
+        /*
+        You will have one task whose only job is to send to the UART. It wonâ€™t interface to any other
+        I/O devices (and it wonâ€™t do UART receive). It can do some processing on data to be sent. It will
+        read from a single FreeRTOS queue to get the data that needs to be sent.
+        Body of your UART send task:
+        */
     struct uartQueueStruct uartStruct;
 
     dbgEvent(BEFORE_UART_LOOP);
@@ -97,7 +93,7 @@ void *uart_task(void *arg0) {
             /* a. Make sure that you check for errors and halt if you get any */
 
             /* b. Send all of the data received from the queue */
-        sub_uart_send(uartStruct.msg, uart_send);
+        sub_uart_send(uartStruct.msg);
 
         continue;
     }
@@ -145,8 +141,8 @@ int createUARTThread(int threadStackSize, int prio) {
 void *uart_recv_task(void *argv) {
 
         /*
-        You will have one task whose only job is to receive from the UART. It won’t interface to any
-        other I/O devices (and it won’t do UART send). It can do some processing on the received data.
+        You will have one task whose only job is to receive from the UART. It wonâ€™t interface to any
+        other I/O devices (and it wonâ€™t do UART send). It can do some processing on the received data.
         It will send the data via a FreeRTOS queue to whichever task(s) should receive it.
         Body of your UART receive task:
         */

@@ -85,11 +85,16 @@ int main(void) {
     if(sensor_handle == NULL)
         return (1);
 
+    timer70Init();
+    timer500Init();
+
+    int i;
+    for(i=0; i<1000; i++) {}
+
     createSensorThread(THREADSTACKSIZE, 1);
     createUARTThread(THREADSTACKSIZE, 1);
 
-    timer70Init();
-    timer500Init();
+
 
     /* Start the FreeRTOS scheduler */
     vTaskStartScheduler();
