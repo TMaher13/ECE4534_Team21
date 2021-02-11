@@ -1,5 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 /* Driver Header files */
 #include <ti/drivers/GPIO.h>
@@ -48,9 +50,14 @@ void timer70Init()
         while (1) {}
     }
 
+    GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+
     if (Timer_start(timer70) == Timer_STATUS_ERROR) {
         /* Failed to start timer */
-        while (1) {}
+        while (1) {
+            //GPIO_toggle(CONFIG_GPIO_LED_0);
+            //sleep(1);
+        }
     }
 }
 
@@ -72,14 +79,14 @@ void timer70Callback(Timer_Handle myHandle, int_fast16_t status)
 
     static uint32_t spoofReading = 0;
 
-    ADC_Params params;
+    /*ADC_Params params;
     ADC_Handle adc;
 
     ADC_Params_init(&params);
     adc = ADC_open(CONFIG_ADC_0, &params);
 
     if (adc == NULL) {
-        /* Failed to initialized timer */
+        /* Failed to initialized timer
         while (1);
     }
 
@@ -92,13 +99,13 @@ void timer70Callback(Timer_Handle myHandle, int_fast16_t status)
     }
     else {
         mmValue = spoofReading;
-    }
+    }*/
 
     spoofReading++;
-    struct sensorQueueStruct m = {TIMER70_MESSAGE, mmValue};
+    struct sensorQueueStruct m = {TIMER70_MESSAGE, spoofReading};
 
     writeSensorQueueCallback(&m);
 
-    ADC_close(adc);
+    //ADC_close(adc);
 }
 

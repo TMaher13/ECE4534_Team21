@@ -78,7 +78,6 @@ void timer500Callback(Timer_Handle myHandle, int_fast16_t status)
 
     uint32_t msec = convertTicks2ms(tickCount) - lastTime;
     lastTime = msec;
-    //uint32_t elapsed; //= elapsedTime(msec);
 
     struct sensorQueueStruct m = {TIMER500_MESSAGE, msec};
     writeSensorQueueCallback(&m);
