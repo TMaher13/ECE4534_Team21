@@ -1,74 +1,72 @@
-/*
- * Copyright (c) 2018-2020, Texas Instruments Incorporated
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * *  Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * *  Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * *  Neither the name of Texas Instruments Incorporated nor the names of
- *    its contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/**
+ * These arguments were used when this file was generated. They will be automatically applied on subsequent loads
+ * via the GUI or CLI. Run CLI with '--help' for additional information on how to override these arguments.
+ * @cliArgs --board "/ti/boards/CC3220SF_LAUNCHXL" --product "simplelink_cc32xx_sdk@4_20_00_07"
+ * @versions {"data":"2021010520","timestamp":"2021010520","tool":"1.7.0+1746","templates":null}
  */
-// @cliArgs --board /ti/boards/CC3220SF_LAUNCHXL
+const bp_BPBASSENSORSMKII = scripting.addHardware("/ti/boards/boosterpacks/BP-BASSENSORSMKII");
 
-/*
- *  i2ctmp.syscfg
+/**
+ * Import the modules used in this configuration.
  */
+const Display  = scripting.addModule("/ti/display/Display");
+const Display1 = Display.addInstance();
+const ADC      = scripting.addModule("/ti/drivers/ADC", {}, false);
+const ADC1     = ADC.addInstance();
+const GPIO     = scripting.addModule("/ti/drivers/GPIO");
+const GPIO1    = GPIO.addInstance();
+const GPIO2    = GPIO.addInstance();
+const I2C      = scripting.addModule("/ti/drivers/I2C");
+const I2C1     = I2C.addInstance();
+const RTOS     = scripting.addModule("/ti/drivers/RTOS");
+const Timer    = scripting.addModule("/ti/drivers/Timer", {}, false);
+const Timer1   = Timer.addInstance();
+const Timer2   = Timer.addInstance();
 
-/* ======== Board ======== */
-var board = system.deviceData.board.name;
+/**
+ * Write custom configuration values to the imported modules.
+ */
+Display1.$name      = "CONFIG_Display_0";
+Display1.$hardware  = system.deviceData.board.components.XDS110UART;
+Display1.uart.$name = "CONFIG_UART_0";
 
-/* ======== Sensors BoosterPack ======== */
-if (board.match(/MSP.EXP432E/)) {
-    var Sensors = scripting.addHardware("/ti/boards/boosterpacks/BP-BASSENSORSMKII", "boosterpack2");
-}
-else {
-    var Sensors = scripting.addHardware("/ti/boards/boosterpacks/BP-BASSENSORSMKII");
-}
+ADC1.$name              = "CONFIG_ADC_0";
+ADC1.$hardware          = bp_BPBASSENSORSMKII.components.DRV5055.subComponents.OUTPUT;
+ADC1.adc.$assign        = "ADC0";
+ADC1.adc.adcPin.$assign = "boosterpack.2";
 
-/* ======== RTOS ======== */
-var RTOS = scripting.addModule("/ti/drivers/RTOS");
+GPIO1.$hardware = system.deviceData.board.components.LED_RED;
+GPIO1.$name     = "CONFIG_GPIO_LED_0";
+
+GPIO2.$name     = "CONFIG_GPIO_TMP_EN";
+GPIO2.$hardware = bp_BPBASSENSORSMKII.components.TMP117.subComponents.POWER;
+
+I2C1.$name     = "CONFIG_I2C_TMP";
+I2C1.$hardware = system.deviceData.board.components.LP_I2C;
+
+const Power          = scripting.addModule("/ti/drivers/Power", {}, false);
+Power.parkPins.$name = "ti_drivers_power_PowerCC32XXPins0";
+
 RTOS.name = "FreeRTOS";
 
-/* ======== Display ======== */
-var Display = scripting.addModule("/ti/display/Display");
-var displayUART = Display.addInstance();
-displayUART.$hardware = system.deviceData.board.components.XDS110UART;
+Timer1.$name         = "CONFIG_TIMER_0";
+Timer1.timerType     = "32 Bits";
+Timer1.timer.$assign = "Timer0";
 
-/* ======== GPIO ======== */
-    var GPIO = scripting.addModule("/ti/drivers/GPIO");
-    var gpio = GPIO.addInstance();
-    gpio.$hardware = system.deviceData.board.components.LED0;
-    gpio.$name = "CONFIG_GPIO_LED_0";
+Timer2.$name         = "CONFIG_TIMER_1";
+Timer2.timerType     = "32 Bits";
+Timer2.timer.$assign = "Timer1";
 
-if (!board.match(/CC1352P/)) {
-    var gpio2 = GPIO.addInstance();
-    gpio2.$name = "CONFIG_GPIO_TMP_EN";
-    gpio2.$hardware = Sensors.components.TMP117.subComponents.POWER;
-}
-
-/* ======== I2C ======== */
-var I2C = scripting.addModule("/ti/drivers/I2C");
-var i2c = I2C.addInstance();
-i2c.$name = "CONFIG_I2C_TMP";
-i2c.$hardware = Sensors.components.BP_BASSENSORSMKII_I2C;
+/**
+ * Pinmux solution for unlocked pins/peripherals. This ensures that minor changes to the automatic solver in a future
+ * version of the tool will not impact the pinmux you originally saw.  These lines can be completely deleted in order to
+ * re-solve from scratch.
+ */
+Display1.uart.uart.$suggestSolution       = "UART1";
+Display1.uart.uart.txPin.$suggestSolution = "55";
+Display1.uart.uart.rxPin.$suggestSolution = "57";
+GPIO1.gpioPin.$suggestSolution            = "boosterpack.29";
+GPIO2.gpioPin.$suggestSolution            = "boosterpack.28";
+I2C1.i2c.$suggestSolution                 = "I2C0";
+I2C1.i2c.sdaPin.$suggestSolution          = "boosterpack.10";
+I2C1.i2c.sclPin.$suggestSolution          = "boosterpack.9";

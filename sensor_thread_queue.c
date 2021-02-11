@@ -17,6 +17,10 @@
 #include <task.h>
 #include <queue.h>
 
+//#include "sensor_thread_queue.h"
+
+extern QueueHandle_t sensor_handle;
+
 #include <queue_structs.h>
 
 QueueHandle_t createSensorQueue(unsigned int queueLen, unsigned int itemSize) {
@@ -32,4 +36,20 @@ BaseType_t readSensorQueue(QueueHandle_t handle, struct sensorQueueStruct *data)
 BaseType_t writeSensorQueue(QueueHandle_t handle, struct sensorQueueStruct *data) {
 
     return xQueueSend(handle, data, 100);
+}
+
+BaseType_t writeSensorQueueCallback(const void *pvItemToQueue)
+{
+    BaseType_t res, xHigherPriorityTaskWoken;
+
+    xHigherPriorityTaskWoken = pdFALSE;
+
+    res = xQueueSendFromISR(sensor_handle, pvItemToQueue, &xHigherPriorityTaskWoken);
+
+    if( xHigherPriorityTaskWoken ) {
+        /* Actual macro used here is port specific. */
+        taskYIELD ();
+    }
+
+    return res;
 }

@@ -1,3 +1,10 @@
+
+#ifndef QUEUE_STRUCTS
+#define QUEUE_STRUCTS
+
+#include <stdlib.h>
+#include <stdint.h>
+
 extern const uint_least8_t          TIMER70_MESSAGE_CONST;
 #define TIMER70_MESSAGE             0
 
@@ -13,5 +20,9 @@ struct sensorQueueStruct {
 
 struct uartQueueStruct {
 
+    char* msg;
 
 };
+
+
+#endif

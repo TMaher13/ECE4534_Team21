@@ -19,9 +19,12 @@
 /* POSIX Header files */
 #include <pthread.h>
 
+#include <queue_structs.h>
+
 /* FreeRTOS includes */
 #include <FreeRTOS.h>
 #include <task.h>
+#include <queue.h>
 
 /* Driver Header files */
 #include <ti/drivers/UART.h>
@@ -29,7 +32,13 @@
 /* Driver configuration */
 #include "ti_drivers_config.h"
 
-int sub_uart_send(char *message[]){
+extern QueueHandle_t uart_handle;
+
+extern readUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data);
+extern writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data);
+
+
+int sub_uart_send(char *message){
 
     UART_init();
 
@@ -55,8 +64,9 @@ int sub_uart_send(char *message[]){
 
 }
 
+
 // Task used to receive strings and output them to UART (UART Send)
-void *uart_task(char message[]) {
+void *uart_task(void *arg0) {
 
         /*
         You will have one task whose only job is to send to the UART. It won’t interface to any other
@@ -64,12 +74,15 @@ void *uart_task(char message[]) {
         read from a single FreeRTOS queue to get the data that needs to be sent.
         Body of your UART send task:
         */
-
+    struct uartQueueStruct uartStruct;
 
 
     while (1) {
         /* 1. Blocking receive call from a single FreeRTOS queue. */
             // THIS WILL BE A SUBROUTINE
+        while(readUARTQueue(uart_handle, &uartStruct) != pdTRUE) {
+            // block until we read from queue
+        }
 
         /* 2. Do any processing you want to do, but nothing else */
 
@@ -78,12 +91,47 @@ void *uart_task(char message[]) {
             /* a. Make sure that you check for errors and halt if you get any */
 
             /* b. Send all of the data received from the queue */
-        sub_uart_send(&message);
+        sub_uart_send(uartStruct.msg);
 
         continue;
     }
 
 }
+
+
+int createUARTThread(int threadStackSize, int prio) {
+
+    pthread_t           thread;
+    pthread_attr_t      attrs;
+    struct sched_param  priParam;
+    int                 retc;
+
+
+    /* Initialize the attributes structure with default values */
+    pthread_attr_init(&attrs);
+
+    /* Set priority, detach state, and stack size attributes */
+    priParam.sched_priority = prio;
+    retc = pthread_attr_setschedparam(&attrs, &priParam);
+    retc |= pthread_attr_setdetachstate(&attrs, PTHREAD_CREATE_DETACHED);
+    retc |= pthread_attr_setstacksize(&attrs, threadStackSize);
+    if (retc != 0) {
+        return -1; // Stack initialization failed
+    }
+
+    retc = pthread_create(&thread, &attrs, uart_task, NULL);
+    if (retc != 0) {
+        return -2; // Thread/task creation failed
+    }
+
+    return 0;
+}
+
+
+
+
+
+
 
 // Task used to receive strings and output them to UART (UART Receive)
 void *uart_recv_task(void *argv) {
@@ -135,33 +183,5 @@ char* sub_uart_recv(){
 
     return rxBuffer;
 
-}
-
-int createUARTThread(int threadStackSize, int prio) {
-
-    pthread_t           thread;
-    pthread_attr_t      attrs;
-    struct sched_param  priParam;
-    int                 retc;
-
-
-    /* Initialize the attributes structure with default values */
-    pthread_attr_init(&attrs);
-
-    /* Set priority, detach state, and stack size attributes */
-    priParam.sched_priority = prio;
-    retc = pthread_attr_setschedparam(&attrs, &priParam);
-    retc |= pthread_attr_setdetachstate(&attrs, PTHREAD_CREATE_DETACHED);
-    retc |= pthread_attr_setstacksize(&attrs, threadStackSize);
-    if (retc != 0) {
-        return -1; // Stack initialization failed
-    }
-
-    retc = pthread_create(&thread, &attrs, uart_task, NULL);
-    if (retc != 0) {
-        return -2; // Thread/task creation failed
-    }
-
-    return 0;
 }
 

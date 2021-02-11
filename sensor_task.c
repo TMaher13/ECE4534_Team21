@@ -26,20 +26,17 @@
 //#include <sensor_thread_queue.h>
 //#include <sensor_thread_state.h>
 
-extern BaseType_t readSensorQueue(QueueHandle_t handle, struct sensorQueueStruct *data, bool blocking);
+extern BaseType_t readSensorQueue(QueueHandle_t handle, struct sensorQueueStruct *data);
 extern BaseType_t writeSesnorQueue(QueueHandle_t handle, struct sensorQueueStruct *data, bool blocking);
 
 extern int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg);
+
+extern QueueHandle_t sensor_handle;
 
 // FreeRTOS includes
 #include <FreeRTOS.h>
 #include <task.h>
 #include <queue.h>
-
-struct QueueHandles {
-    QueueHandle_t sensor_handle;
-    QueueHandle_t uart_handle;
-};
 
 
 void *sensorThread(void *arg0) {
@@ -63,16 +60,25 @@ void *sensorThread(void *arg0) {
 
 #else
 
-    struct sensorQueueStruct *sensorData;
+    struct sensorQueueStruct sensorData = {TIMER70_MESSAGE, 0};
     int fsm_ret = 0;
+
+    //GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+
+    /* Turn off user LED */
+    //GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_OFF);
+
+    //GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
 
     for(;;) {
 
-        if(readSensorQueue( ((struct QueueHandles*)arg0)->sensor_handle, sensorData, true) == pdFALSE)
-            // Return error
-            break;
+        while(readSensorQueue( sensor_handle, &sensorData) != pdTRUE) {
+            //GPIO_toggle(CONFIG_GPIO_LED_0);
+            //vTaskDelay(1000);
+        }
 
-        fsm_ret = sensorFSM( ((struct QueueHandles*)arg0)->uart_handle, sensorData );
+
+        fsm_ret = sensorFSM( sensor_handle, &sensorData );
         if(fsm_ret == 1)
             // error
             return NULL;
@@ -85,7 +91,7 @@ void *sensorThread(void *arg0) {
 #endif
 }
 
-int createSensorThread(QueueHandle_t sensor_handle, QueueHandle_t uart_handle, int threadStackSize, int prio) {
+int createSensorThread(int threadStackSize, int prio) {
 
     pthread_t           thread;
     pthread_attr_t      attrs;
@@ -105,9 +111,8 @@ int createSensorThread(QueueHandle_t sensor_handle, QueueHandle_t uart_handle, i
         return -1; // Stack initialization failed
     }
 
-    struct QueueHandles queueHandles = {sensor_handle, uart_handle};
 
-    retc = pthread_create(&thread, &attrs, sensorThread, &queueHandles);
+    retc = pthread_create(&thread, &attrs, sensorThread, NULL);
     if (retc != 0) {
         return -2; // Thread/task creation failed
     }

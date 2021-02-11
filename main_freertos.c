@@ -50,12 +50,20 @@
 
 #include <queue_structs.h>
 
-extern int createSensorThread(QueueHandle_t sensor_handle, QueueHandle_t uart_handle, int threadStackSize, int prio);
+extern void timer500Init();
+extern void timer70Init();
+
+extern int createSensorThread(int threadStackSize, int prio);
+extern int createUARTThread(int threadStackSize, int prio);
 
 extern QueueHandle_t createSensorQueue(unsigned int queueLen, unsigned int itemSize);
+extern QueueHandle_t createUARTQueue(unsigned int queueLen, unsigned int itemSize);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE   1024
+
+QueueHandle_t sensor_handle;
+QueueHandle_t uart_handle;
 
 /*
  *  ======== main ========
@@ -69,17 +77,17 @@ int main(void) {
 
     Board_init();
 
-    QueueHandle_t sensor_handle = createSensorQueue(10, sizeof(struct sensorQueueStruct));
-    //QueueHandle_t uart_handle = createUartQueue(10, sizeof(struct uartQueueStruct));
-    QueueHandle_t uart_handle;
+    sensor_handle = createSensorQueue(10, sizeof(struct sensorQueueStruct));
+    uart_handle = createUARTQueue(10, sizeof(struct uartQueueStruct));
 
     if(sensor_handle == NULL)
         return (1);
 
-    /*if(!createSensorThread(sensor_handle, THREADSTACKSIZE, 1)) {
-        GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
-    }*/
-    createSensorThread(sensor_handle, uart_handle, THREADSTACKSIZE, 1);
+    createSensorThread(THREADSTACKSIZE, 1);
+    createUARTThread(THREADSTACKSIZE, 1);
+
+    timer70Init();
+    timer500Init();
 
     /* Start the FreeRTOS scheduler */
     vTaskStartScheduler();
