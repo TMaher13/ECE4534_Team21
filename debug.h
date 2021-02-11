@@ -35,6 +35,8 @@
 #define LEAVE_SENSOR_QUEUE_CALLBACK 0x14
 #define BEFORE_UART_READ_RTOS 0x15
 #define AFTER_UART_READ_RTOS 0x16
+//#define READ_A 0x17
+//#define READ_S 0x18
 
 
 /* Fatal Error Constants */

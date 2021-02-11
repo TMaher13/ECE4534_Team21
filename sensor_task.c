@@ -28,7 +28,7 @@
 //#include <sensor_thread_state.h>
 
 extern BaseType_t readSensorQueue(QueueHandle_t handle, struct sensorQueueStruct *data);
-extern BaseType_t writeSesnorQueue(QueueHandle_t handle, struct sensorQueueStruct *data, bool blocking);
+extern BaseType_t writeSensorQueue(QueueHandle_t handle, struct sensorQueueStruct *data, bool blocking);
 
 extern int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg);
 

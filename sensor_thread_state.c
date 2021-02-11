@@ -15,7 +15,7 @@
 #include <task.h>
 #include <queue.h>
 
-extern writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct **data);
+extern writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data);
 
 extern void dbgEvent(unsigned int event);
 extern void fatalError(unsigned int event);
