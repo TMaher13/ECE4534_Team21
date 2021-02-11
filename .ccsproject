@@ -15,4 +15,5 @@
 	<templateProperties value="id=i2ctmp_CC3220SF_LAUNCHXL_freertos_ccs.projectspec.i2ctmp_CC3220SF_LAUNCHXL_freertos_ccs,buildProfile=release,isHybrid=true"/>
 	<origin value="C:\ti\simplelink_cc32xx_sdk_4_20_00_07\examples\rtos\CC3220SF_LAUNCHXL\drivers\i2ctmp\freertos\ccs\i2ctmp_CC3220SF_LAUNCHXL_freertos_ccs.projectspec"/>
 	<filesToOpen value=""/>
+	<isTargetManual value="false"/>
 </projectOptions>

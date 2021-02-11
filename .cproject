@@ -114,7 +114,7 @@
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings">
-				<externalSettings containerId="freertos_builds_CC3220SF_LAUNCHXL_release_ccs;com.ti.ccstudio.buildDefinitions.TMS470.Debug.1570878125" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
+				<externalSettings containerId="freertos_builds_CC3220SF_LAUNCHXL_release_ccs;com.ti.ccstudio.buildDefinitions.TMS470.Debug.540848599" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
 			</storageModule>
 		</cconfiguration>
 		<cconfiguration id="com.ti.ccstudio.buildDefinitions.TMS470.Debug.177637018">
