@@ -48,6 +48,7 @@ BaseType_t writeSensorQueueCallback(struct sensorQueueStruct *m)
 
     res = xQueueSendFromISR(sensor_handle, m, &xHigherPriorityTaskWoken);
 
+
     if( xHigherPriorityTaskWoken ) {
         /* Actual macro used here is port specific. */
         taskYIELD ();
