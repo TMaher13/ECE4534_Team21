@@ -79,8 +79,8 @@ int main(void) {
     Board_init();
     debugInit();
 
-    sensor_handle = createSensorQueue(10, sizeof(struct sensorQueueStruct));
-    uart_handle = createUARTQueue(10, sizeof(struct uartQueueStruct));
+    sensor_handle = createSensorQueue(1, sizeof(struct sensorQueueStruct));
+    uart_handle = createUARTQueue(1, sizeof(struct uartQueueStruct));
 
     if(sensor_handle == NULL)
         return (1);

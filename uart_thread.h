@@ -21,7 +21,7 @@ char *message[] sub_uart_recv();
 
 void *uart_recv_task(void *argv);
 
-int sub_uart_send(char *message);
+int sub_uart_send(char *message, UART_Handle uart_send);
 
 
 #include <uart_thread.c>
