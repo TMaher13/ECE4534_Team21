@@ -27,7 +27,7 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
 
     BaseType_t uartQueueRet;
 
-    struct uartQueueStruct *uart =  malloc(sizeof(struct uartQueueStruct));
+    struct uartQueueStruct uart;
     char uartMsg[BUFFER_SIZE];
 
     double avg;
@@ -53,7 +53,7 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
 
                 memset(uartMsg, 0, BUFFER_SIZE);
                 snprintf(uartMsg, BUFFER_SIZE, "Avg = %0.2fmm; Time = %dms\n", avg, sensorMsg->value);
-                memcpy(uart->msg,uartMsg, BUFFER_SIZE);
+                memcpy(uart.msg,uartMsg, BUFFER_SIZE);
 
                 dbgEvent(BEFORE_WRITE_UART_QUEUE_TIMER500);
                 uartQueueRet = writeUARTQueue(uart_handle, &uart);
@@ -68,14 +68,12 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
             }
             else if(sensorMsg->messageType == TIMER70_MESSAGE) {
 
-                //uartMsg = malloc(sizeof(char) * 32);
-
                 sensorTotal += sensorMsg->value;
                 sensorCount++;
 
-                /*
-                sprintf(uartMsg, "Sensor %d = %dmm\n", sensorCount, sensorMsg->value);
-                (*uart).msg = uartMsg;
+                memset(uartMsg, 0, BUFFER_SIZE);
+                snprintf(uartMsg, BUFFER_SIZE, "Sensor %d = %dmm\n", sensorCount, sensorMsg->value);
+                memcpy(uart.msg,uartMsg, BUFFER_SIZE);
 
                 dbgEvent(BEFORE_WRITE_UART_QUEUE_TIMER70);
                 uartQueueRet = writeUARTQueue(uart_handle, &uart);
@@ -83,7 +81,6 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
                 if(uartQueueRet != pdPASS) {
                     fatalError(WRITE_UART_QUEUE_FATAL_ERROR_TIMER70);
                 }
-                */
 
             }
             else
