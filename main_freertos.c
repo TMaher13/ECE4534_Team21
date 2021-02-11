@@ -80,7 +80,7 @@ int main(void) {
     debugInit();
 
     sensor_handle = createSensorQueue(10, sizeof(struct sensorQueueStruct));
-    uart_handle = createUARTQueue(10, sizeof(struct uartQueueStruct*));
+    uart_handle = createUARTQueue(10, sizeof(struct uartQueueStruct));
 
     if(sensor_handle == NULL)
         return (1);

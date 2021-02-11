@@ -34,8 +34,8 @@
 
 extern QueueHandle_t uart_handle;
 
-extern readUARTQueue(QueueHandle_t handle, struct uartQueueStruct **data);
-extern writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct **data);
+extern readUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data);
+extern writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data);
 
 extern void dbgEvent(unsigned int event);
 extern void fatalError(unsigned int event);
@@ -43,7 +43,7 @@ extern void fatalError(unsigned int event);
 int sub_uart_send(UART_Handle uart_send, char *message){
 
     dbgEvent(BEFORE_WRITE_UART_QUEUE);
-    UART_writePolling(uart_send, (const void *)message, sizeof(message));
+    UART_write(uart_send, message, sizeof(BUFFER_SIZE));
     dbgEvent(AFTER_WRITE_UART_QUEUE);
     return 1;
 
@@ -77,13 +77,13 @@ void *uart_task(void *arg0) {
         read from a single FreeRTOS queue to get the data that needs to be sent.
         Body of your UART send task:
         */
-    struct uartQueueStruct *uartStruct;
+    struct uartQueueStruct *uartStruct = malloc(sizeof(struct uartQueueStruct));
 
     dbgEvent(BEFORE_UART_LOOP);
     while (1) {
         /* 1. Blocking receive call from a single FreeRTOS queue. */
         dbgEvent(BEFORE_READ_UART_QUEUE);
-        while(readUARTQueue(uart_handle, &uartStruct) != pdTRUE) {
+        while(readUARTQueue(uart_handle, uartStruct) != pdTRUE) {
             // block until we read from queue
             GPIO_toggle(CONFIG_GPIO_LED_0);
             vTaskDelay(1000);
@@ -170,7 +170,7 @@ char* sub_uart_recv(){
 
     UART_Handle uart_recv;
     UART_Params uartParams;
-    unsigned char rxBuffer[20];
+    char rxBuffer[sizeof(struct uartQueueStruct)];
 
     UART_Params_init(&uartParams);
     uartParams.writeMode = UART_MODE_CALLBACK;

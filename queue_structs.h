@@ -11,6 +11,9 @@ extern const uint_least8_t          TIMER70_MESSAGE_CONST;
 extern const uint_least8_t          TIMER500_MESSAGE_CONST;
 #define TIMER500_MESSAGE            1
 
+extern const uint_least8_t          BUFFER_SIZE_CONST;
+#define BUFFER_SIZE                 64
+
 struct sensorQueueStruct {
 
     uint_least8_t messageType;
@@ -20,7 +23,7 @@ struct sensorQueueStruct {
 
 struct uartQueueStruct {
 
-    char* msg;
+    char msg[BUFFER_SIZE];
 
 };
 
