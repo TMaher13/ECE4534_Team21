@@ -30,6 +30,7 @@ const RTOS     = scripting.addModule("/ti/drivers/RTOS");
 const Timer    = scripting.addModule("/ti/drivers/Timer", {}, false);
 const Timer1   = Timer.addInstance();
 const Timer2   = Timer.addInstance();
+const Timer3   = Timer.addInstance();
 
 /**
  * Write custom configuration values to the imported modules.
@@ -89,6 +90,8 @@ Timer2.$name         = "CONFIG_TIMER_1";
 Timer2.timerType     = "32 Bits";
 Timer2.timer.$assign = "Timer1";
 
+Timer3.$name = "CONFIG_TIMER_2";
+
 /**
  * Pinmux solution for unlocked pins/peripherals. This ensures that minor changes to the automatic solver in a future
  * version of the tool will not impact the pinmux you originally saw.  These lines can be completely deleted in order to
@@ -110,3 +113,4 @@ GPIO10.gpioPin.$suggestSolution           = "boosterpack.30";
 I2C1.i2c.$suggestSolution                 = "I2C0";
 I2C1.i2c.sdaPin.$suggestSolution          = "boosterpack.10";
 I2C1.i2c.sclPin.$suggestSolution          = "boosterpack.9";
+Timer3.timer.$suggestSolution             = "Timer2";

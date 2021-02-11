@@ -17,6 +17,7 @@ void dbgEvent(unsigned int event);
 void fatalError(unsigned int event);
 void dbgGPIOWrite(unsigned int event);
 void errorLED();
+void debugInit();
 
 
 
