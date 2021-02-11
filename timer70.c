@@ -1,4 +1,27 @@
-#include "timer70.h"
+#include <stdint.h>
+#include <stddef.h>
+
+/* Driver Header files */
+#include <ti/drivers/GPIO.h>
+#include <ti/drivers/Timer.h>
+#include <ti/drivers/ADC.h>
+
+/* RTOS header files */
+#include <FreeRTOS.h>
+#include <task.h>
+#include <queue.h>
+
+#include <queue_structs.h>
+
+#include <ti_drivers_config.h>
+
+extern const uint32_t          TIMER70_PERIOD_CONST;
+#define TIMER70_PERIOD         70000
+
+void timer70Callback(Timer_Handle myHandle, int_fast16_t status);
+
+extern BaseType_t writeSensorQueueCallback(const void *pvItemToQueue);
+
 
 void timer70Init()
 {
@@ -47,6 +70,8 @@ void timer70Callback(Timer_Handle myHandle, int_fast16_t status)
     uint16_t adcValue;
     uint32_t mmValue;
 
+    static uint32_t spoofReading = 0;
+
     ADC_Params params;
     ADC_Handle adc;
 
@@ -59,18 +84,20 @@ void timer70Callback(Timer_Handle myHandle, int_fast16_t status)
     }
 
     res = ADC_convert(0, &adcValue);
-    mmValue = convert2mm(adcValue);
 
     if (res == ADC_STATUS_SUCCESS)
     {
-        struct sensorQueueStruct m = {TIMER70_MESSAGE, mmValue};
+        mmValue = convert2mm(adcValue);
 
-        writeSensorQueueCallback(&m);
     }
     else {
-        /* Failed to initialized timer */
-        while (1);
+        mmValue = spoofReading;
     }
+
+    spoofReading++;
+    struct sensorQueueStruct m = {TIMER70_MESSAGE, mmValue};
+
+    writeSensorQueueCallback(&m);
 
     ADC_close(adc);
 }

@@ -50,6 +50,9 @@
 
 #include <queue_structs.h>
 
+extern void timer500Init();
+extern void timer70Init();
+
 extern int createSensorThread(int threadStackSize, int prio);
 extern int createUARTThread(int threadStackSize, int prio);
 
@@ -82,6 +85,9 @@ int main(void) {
 
     createSensorThread(THREADSTACKSIZE, 1);
     createUARTThread(THREADSTACKSIZE, 1);
+
+    timer70Init();
+    timer500Init();
 
     /* Start the FreeRTOS scheduler */
     vTaskStartScheduler();

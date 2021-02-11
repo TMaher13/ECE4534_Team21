@@ -7,9 +7,6 @@
 
 #include "ti_drivers_config.h"
 
-#include "queue_structs.h"
-#include "sensor_thread_queue.h"
-
 #ifndef TIMER500
 #define TIMER500
 

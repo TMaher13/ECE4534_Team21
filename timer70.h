@@ -1,20 +1,9 @@
 #include <stddef.h>
 
-/* Driver Header files */
-#include <ti/drivers/GPIO.h>
-#include <ti/drivers/Timer.h>
-#include <ti/drivers/ADC.h>
-
-#include "ti_drivers_config.h"
-
-#include "queue_structs.h"
-#include "sensor_thread_queue.h"
+#include <queue_structs.h>
 
 #ifndef TIMER70
 #define TIMER70
-
-extern const uint32_t          TIMER70_PERIOD_CONST;
-#define TIMER70_PERIOD         70000
 
 /*!
  *  @brief  Function to perform a conversion into millimeters

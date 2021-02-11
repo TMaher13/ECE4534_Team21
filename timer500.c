@@ -1,4 +1,23 @@
-#include "timer500.h"
+#include <stdint.h>
+#include <stddef.h>
+
+/* Driver Header files */
+#include <ti/drivers/GPIO.h>
+#include <ti/drivers/Timer.h>
+#include <ti/drivers/ADC.h>
+
+/* RTOS header files */
+#include <FreeRTOS.h>
+#include <task.h>
+#include <queue.h>
+
+#include <queue_structs.h>
+
+#include <ti_drivers_config.h>
+
+extern BaseType_t writeSensorQueueCallback(const void *pvItemToQueue);
+
+void timer500Callback(Timer_Handle myHandle, int_fast16_t status);
 
 void timer500Init()
 {
@@ -44,13 +63,15 @@ uint32_t convertTicks2ms(TickType_t ticks)
  */
 void timer500Callback(Timer_Handle myHandle, int_fast16_t status)
 {
+    static uint32_t lastTime = 0;
+
     TickType_t tickCount = xTaskGetTickCountFromISR();
 
-    uint32_t msec = convertTicks2ms(tickCount);
+    uint32_t msec = convertTicks2ms(tickCount) - lastTime;
+    lastTime = msec;
+    //uint32_t elapsed; //= elapsedTime(msec);
 
-    uint32_t elapsed; //= elapsedTime(msec);
-
-    struct sensorQueueStruct m = {TIMER500_MESSAGE, elapsed};
+    struct sensorQueueStruct m = {TIMER500_MESSAGE, msec};
     writeSensorQueueCallback(&m);
 }
 
