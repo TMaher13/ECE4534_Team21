@@ -18,6 +18,7 @@
 extern writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data);
 
 extern void dbgEvent(unsigned int event);
+extern void fatalError(unsigned int event);
 
 int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
 
@@ -58,7 +59,7 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
                 dbgEvent(AFTER_WRITE_UART_QUEUE_TIMER500);
 
                 if(uartQueueRet != pdPASS) {
-                    // error handling
+                    fatalError(WRITE_UART_QUEUE_FATAL_ERROR_TIMER500);
                 }
 
                 sensorTotal = 0;
@@ -79,7 +80,7 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
                 uartQueueRet = writeUARTQueue(uart_handle, &uart);
                 dbgEvent(AFTER_WRITE_UART_QUEUE_TIMER70);
                 if(uartQueueRet != pdPASS) {
-                    // error handling
+                    fatalError(WRITE_UART_QUEUE_FATAL_ERROR_TIMER70);
                 }
 
             }

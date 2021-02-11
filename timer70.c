@@ -23,6 +23,7 @@ void timer70Callback(Timer_Handle myHandle, int_fast16_t status);
 extern BaseType_t writeSensorQueueCallback(const void *pvItemToQueue);
 
 extern void dbgEvent(unsigned int event);
+extern void fatalError(unsigned int event);
 
 
 void timer70Init()
@@ -47,11 +48,13 @@ void timer70Init()
 
     if (timer70 == NULL) {
         /* Failed to initialized timer */
+        fatalError(TIMER70_INIT_FATAL_ERROR);
         while (1) {}
     }
 
     if (Timer_start(timer70) == Timer_STATUS_ERROR) {
         /* Failed to start timer */
+        fatalError(TIMER70_START_FATAL_ERROR);
         while (1) {}
     }
 }
@@ -82,7 +85,7 @@ void timer70Callback(Timer_Handle myHandle, int_fast16_t status)
     adc = ADC_open(CONFIG_ADC_0, &params);
 
     if (adc == NULL) {
-        /* Failed to initialized timer */
+        fatalError(ADC_FATAL_ERROR);
         while (1);
     }
 

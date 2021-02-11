@@ -38,6 +38,7 @@ extern readUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data);
 extern writeUARTQueue(QueueHandle_t handle, struct uartQueueStruct *data);
 
 extern void dbgEvent(unsigned int event);
+extern void fatalError(unsigned int event);
 
 int sub_uart_send(char *message){
 
@@ -56,7 +57,7 @@ int sub_uart_send(char *message){
 
     uart_send = UART_open(CONFIG_UART_0, &uartParams);
     if (uart_send == NULL) {
-        /* Error creating UART */
+        fatalError(UART_INIT_FATAL_ERROR);
         return -1;
     }
     dbgEvent(BEFORE_WRITE_UART_QUEUE);

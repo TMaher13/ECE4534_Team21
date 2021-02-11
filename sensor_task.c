@@ -35,6 +35,7 @@ extern int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensor
 extern QueueHandle_t sensor_handle;
 
 extern void dbgEvent(unsigned int event);
+extern void fatalError(unsigned int event);
 
 // FreeRTOS includes
 #include <FreeRTOS.h>
@@ -88,10 +89,10 @@ dbgEvent(ENTER_SENSOR_TASK);
 
         fsm_ret = sensorFSM( sensor_handle, &sensorData );
         if(fsm_ret == 1)
-            // error
+            fatalError(FSM_FATAL_ERROR1);
             return NULL;
         else if(fsm_ret == 2)
-            // error
+            fatalError(FSM_FATAL_ERROR2);
             return NULL;
     }
 
@@ -116,12 +117,14 @@ int createSensorThread(int threadStackSize, int prio) {
     retc |= pthread_attr_setdetachstate(&attrs, PTHREAD_CREATE_DETACHED);
     retc |= pthread_attr_setstacksize(&attrs, threadStackSize);
     if (retc != 0) {
+        fatalError(SENSOR_STACK_FATAL_ERROR);
         return -1; // Stack initialization failed
     }
 
 
     retc = pthread_create(&thread, &attrs, sensorThread, NULL);
     if (retc != 0) {
+        fatalError(SENSOR_THREAD_FATAL_ERROR);
         return -2; // Thread/task creation failed
     }
 
