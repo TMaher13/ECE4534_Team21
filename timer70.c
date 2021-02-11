@@ -10,7 +10,7 @@
 #include <FreeRTOS.h>
 #include <task.h>
 #include <queue.h>
-
+#include <debug.h>
 #include <queue_structs.h>
 
 #include <ti_drivers_config.h>
@@ -21,6 +21,8 @@ extern const uint32_t          TIMER70_PERIOD_CONST;
 void timer70Callback(Timer_Handle myHandle, int_fast16_t status);
 
 extern BaseType_t writeSensorQueueCallback(const void *pvItemToQueue);
+
+extern void dbgEvent(unsigned int event);
 
 
 void timer70Init()
@@ -66,6 +68,7 @@ uint32_t convert2mm(uint16_t adcValue)
  */
 void timer70Callback(Timer_Handle myHandle, int_fast16_t status)
 {
+    dbgEvent(ENTER_TIMER70_CALLBACK);
     int_fast16_t res;
     uint16_t adcValue;
     uint32_t mmValue;
@@ -100,5 +103,6 @@ void timer70Callback(Timer_Handle myHandle, int_fast16_t status)
     writeSensorQueueCallback(&m);
 
     ADC_close(adc);
+    dbgEvent(LEAVE_TIMER70_CALLBACK);
 }
 

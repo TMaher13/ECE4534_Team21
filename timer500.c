@@ -12,10 +12,12 @@
 #include <queue.h>
 
 #include <queue_structs.h>
-
+#include <debug.h>
 #include <ti_drivers_config.h>
 
 extern BaseType_t writeSensorQueueCallback(const void *pvItemToQueue);
+
+extern void dbgEvent(unsigned int event);
 
 void timer500Callback(Timer_Handle myHandle, int_fast16_t status);
 
@@ -63,6 +65,7 @@ uint32_t convertTicks2ms(TickType_t ticks)
  */
 void timer500Callback(Timer_Handle myHandle, int_fast16_t status)
 {
+    dbgEvent(ENTER_TIMER500_CALLBACK);
     static uint32_t lastTime = 0;
 
     TickType_t tickCount = xTaskGetTickCountFromISR();
@@ -73,5 +76,6 @@ void timer500Callback(Timer_Handle myHandle, int_fast16_t status)
 
     struct sensorQueueStruct m = {TIMER500_MESSAGE, msec};
     writeSensorQueueCallback(&m);
+    dbgEvent(LEAVE_TIMER500_CALLBACK);
 }
 

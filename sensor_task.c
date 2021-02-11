@@ -23,6 +23,7 @@
 #include <ti_drivers_config.h>
 
 #include <queue_structs.h>
+#include <debug.h>
 //#include <sensor_thread_queue.h>
 //#include <sensor_thread_state.h>
 
@@ -33,6 +34,8 @@ extern int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensor
 
 extern QueueHandle_t sensor_handle;
 
+extern void dbgEvent(unsigned int event);
+
 // FreeRTOS includes
 #include <FreeRTOS.h>
 #include <task.h>
@@ -40,6 +43,8 @@ extern QueueHandle_t sensor_handle;
 
 
 void *sensorThread(void *arg0) {
+
+dbgEvent(ENTER_SENSOR_TASK);
 
 #if 0
     // For light debugging
@@ -70,13 +75,16 @@ void *sensorThread(void *arg0) {
 
     //GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
 
+    dbgEvent(BEFORE_SENSOR_LOOP);
+
     for(;;) {
 
+        dbgEvent(BEFORE_READ_SENSOR_QUEUE);
         while(readSensorQueue( sensor_handle, &sensorData) != pdTRUE) {
             //GPIO_toggle(CONFIG_GPIO_LED_0);
             //vTaskDelay(1000);
         }
-
+        dbgEvent(AFTER_READ_SENSOR_QUEUE);
 
         fsm_ret = sensorFSM( sensor_handle, &sensorData );
         if(fsm_ret == 1)
