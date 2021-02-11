@@ -72,6 +72,7 @@ void timer70Callback(Timer_Handle myHandle, int_fast16_t status)
 
     static uint32_t spoofReading = 0;
 
+    /*
     ADC_Params params;
     ADC_Handle adc;
 
@@ -79,7 +80,7 @@ void timer70Callback(Timer_Handle myHandle, int_fast16_t status)
     adc = ADC_open(CONFIG_ADC_0, &params);
 
     if (adc == NULL) {
-        /* Failed to initialized timer */
+        /* Failed to initialized timer
         while (1);
     }
 
@@ -93,12 +94,13 @@ void timer70Callback(Timer_Handle myHandle, int_fast16_t status)
     else {
         mmValue = spoofReading;
     }
+    */
 
     spoofReading++;
-    struct sensorQueueStruct m = {TIMER70_MESSAGE, mmValue};
+    struct sensorQueueStruct m = {TIMER70_MESSAGE, spoofReading};
 
     writeSensorQueueCallback(&m);
 
-    ADC_close(adc);
+    //ADC_close(adc);
 }
 

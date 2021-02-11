@@ -15,6 +15,9 @@
 
 #include <ti_drivers_config.h>
 
+extern const uint32_t          TIMER500_PERIOD_CONST;
+#define TIMER500_PERIOD        500000
+
 extern BaseType_t writeSensorQueueCallback(const void *pvItemToQueue);
 
 void timer500Callback(Timer_Handle myHandle, int_fast16_t status);
@@ -32,12 +35,12 @@ void timer500Init()
      * function every 1,000,000 microseconds, or 1 second.
      */
     Timer_Params_init(&params);
-    params.period = 500000;
+    params.period = TIMER500_PERIOD;
     params.periodUnits = Timer_PERIOD_US;
     params.timerMode = Timer_CONTINUOUS_CALLBACK;
     params.timerCallback = timer500Callback;
 
-    timer500 = Timer_open(CONFIG_TIMER_0, &params);
+    timer500 = Timer_open(CONFIG_TIMER_1, &params);
 
     if (timer500 == NULL) {
         /* Failed to initialized timer */
