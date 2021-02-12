@@ -32,10 +32,6 @@ void timer500Init()
     /* Call driver init functions */
     Timer_init();
 
-    /*
-     * Setting up the timer in continuous callback mode that calls the callback
-     * function every 1,000,000 microseconds, or 1 second.
-     */
     Timer_Params_init(&params);
     params.period = TIMER500_PERIOD;
     params.periodUnits = Timer_PERIOD_US;
@@ -63,11 +59,6 @@ uint32_t convertTicks2ms(TickType_t ticks)
     return ticks * 1000;
 }
 
-/*
- * This callback is called every 1,000,000 microseconds, or 1 second. Because
- * the LED is toggled each time this function is called, the LED will blink at
- * a rate of once every 2 seconds.
- */
 void timer500Callback(Timer_Handle myHandle, int_fast16_t status)
 {
     dbgEvent(ENTER_TIMER500_CALLBACK);

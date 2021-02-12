@@ -33,10 +33,6 @@ void timer70Init()
     /* Call driver init functions */
     Timer_init();
 
-    /*
-     * Setting up the timer in continuous callback mode that calls the callback
-     * function every 1,000,000 microseconds, or 1 second.
-     */
     Timer_Params_init(&params);
     params.period = TIMER70_PERIOD;
     params.periodUnits = Timer_PERIOD_US;
@@ -66,11 +62,6 @@ uint32_t convert2mm(uint16_t adcValue)
     return adcValue * 10;
 }
 
-/*
- * This callback is called every 1,000,000 microseconds, or 1 second. Because
- * the LED is toggled each time this function is called, the LED will blink at
- * a rate of once every 2 seconds.
- */
 void timer70Callback(Timer_Handle myHandle, int_fast16_t status)
 {
     dbgEvent(ENTER_TIMER70_CALLBACK);
@@ -82,6 +73,18 @@ void timer70Callback(Timer_Handle myHandle, int_fast16_t status)
     static struct sensorQueueStruct m;
 
     static uint32_t spoofReading = 0;
+
+    spoofReading++;
+    m.messageType = TIMER70_MESSAGE;
+    m.value = spoofReading;
+
+    if(spoofReading > 1000)
+        spoofReading = 0;
+
+    writeSensorQueueCallback(&m);
+
+    //ADC_close(adc);
+    dbgEvent(LEAVE_TIMER70_CALLBACK);
 
     /*ADC_Params params;
     ADC_Handle adc;
@@ -104,17 +107,5 @@ void timer70Callback(Timer_Handle myHandle, int_fast16_t status)
     else {
         mmValue = spoofReading;
     }*/
-
-    spoofReading++;
-    m.messageType = TIMER70_MESSAGE;
-    m.value = spoofReading;
-
-    if(spoofReading > 1000)
-        spoofReading = 0;
-
-    writeSensorQueueCallback(&m);
-
-    //ADC_close(adc);
-    dbgEvent(LEAVE_TIMER70_CALLBACK);
 }
 

@@ -54,7 +54,6 @@ BaseType_t writeSensorQueueCallback(struct sensorQueueStruct *m)
         taskYIELD ();
     }
 
-    //TODO: LEAVE_SENSOR_QUEUE_CALLBACK
     dbgEvent(LEAVE_SENSOR_QUEUE_CALLBACK);
     return res;
 }

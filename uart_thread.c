@@ -87,12 +87,7 @@ void *uart_task(void *arg0) {
         dbgEvent(BEFORE_READ_UART_QUEUE);
 
         readRet = readUARTQueue(uart_handle, &uartStruct);
-        //while(uartStruct.msg[0] == '0') {
-            // block until we read from queue
-            //GPIO_toggle(CONFIG_GPIO_LED_0);
-            //vTaskDelay(1000);
-        //    readUARTQueue(uart_handle, &uartStruct);
-        //}
+
         dbgEvent(AFTER_READ_UART_QUEUE);
         /* 2. Do any processing you want to do, but nothing else */
 
