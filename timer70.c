@@ -75,9 +75,11 @@ void timer70Callback(Timer_Handle myHandle, int_fast16_t status)
 {
     dbgEvent(ENTER_TIMER70_CALLBACK);
 
-    int_fast16_t res;
-    uint16_t adcValue;
-    uint32_t mmValue;
+    //int_fast16_t res;
+    //uint16_t adcValue;
+    //uint32_t mmValue;
+
+    static struct sensorQueueStruct m;
 
     static uint32_t spoofReading = 0;
 
@@ -104,7 +106,8 @@ void timer70Callback(Timer_Handle myHandle, int_fast16_t status)
     }*/
 
     spoofReading++;
-    struct sensorQueueStruct m = {TIMER70_MESSAGE, spoofReading};
+    m.messageType = TIMER70_MESSAGE;
+    m.value = spoofReading;
 
     if(spoofReading > 1000)
         spoofReading = 0;

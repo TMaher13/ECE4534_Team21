@@ -27,10 +27,10 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
 
     BaseType_t uartQueueRet;
 
-    struct uartQueueStruct uart;
+    static struct uartQueueStruct uart;
     char uartMsg[BUFFER_SIZE];
 
-    double avg;
+    int avg;
 
     switch(fsmState) {
 
@@ -52,7 +52,7 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
                     avg = 0.0;
 
                 memset(uartMsg, 0, BUFFER_SIZE);
-                snprintf(uartMsg, BUFFER_SIZE, "Avg = %0.2fmm; Time = %dms\n", avg, sensorMsg->value);
+                snprintf(uartMsg, BUFFER_SIZE, "Avg = %dmm; Time = %dms", avg, sensorMsg->value);
                 memcpy(uart.msg,uartMsg, BUFFER_SIZE);
 
                 dbgEvent(BEFORE_WRITE_UART_QUEUE_TIMER500);
@@ -72,7 +72,7 @@ int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg) {
                 sensorCount++;
 
                 memset(uartMsg, 0, BUFFER_SIZE);
-                snprintf(uartMsg, BUFFER_SIZE, "Sensor %d = %dmm\n", sensorCount, sensorMsg->value);
+                snprintf(uartMsg, BUFFER_SIZE, "Sensor %d = %dmm", sensorCount, sensorMsg->value);
                 memcpy(uart.msg,uartMsg, BUFFER_SIZE);
 
                 dbgEvent(BEFORE_WRITE_UART_QUEUE_TIMER70);

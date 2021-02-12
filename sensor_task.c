@@ -49,6 +49,7 @@ void *sensorThread(void *arg0) {
     dbgEvent(ENTER_SENSOR_TASK);
 
     struct sensorQueueStruct sensorData; // = {TIMER70_MESSAGE, 0};
+    BaseType_t readRet;
     int fsm_ret = 0;
 
     dbgEvent(BEFORE_SENSOR_LOOP);
@@ -59,22 +60,24 @@ void *sensorThread(void *arg0) {
 
         dbgEvent(BEFORE_READ_SENSOR_QUEUE);
 
-        readSensorQueue( sensor_handle, &sensorData);
-        while( sensorData.messageType != TIMER70_MESSAGE && sensorData.messageType != TIMER500_MESSAGE) {
+        readRet = readSensorQueue( sensor_handle, &sensorData);
+        /*while( sensorData.messageType != TIMER70_MESSAGE && sensorData.messageType != TIMER500_MESSAGE) {
             // block and wait to read
             readSensorQueue( sensor_handle, &sensorData);
-        }
+        }*/
 
         dbgEvent(AFTER_READ_SENSOR_QUEUE);
 
-        fsm_ret = sensorFSM( uart_handle, &sensorData );
-        if(fsm_ret == 1){
-            fatalError(FSM_FATAL_ERROR1);
-            return NULL;
-        }
-        else if(fsm_ret == 2){
-            fatalError(FSM_FATAL_ERROR2);
-            return NULL;
+        if(readRet == pdTRUE) {
+            fsm_ret = sensorFSM( uart_handle, &sensorData );
+            if(fsm_ret == 1){
+                fatalError(FSM_FATAL_ERROR1);
+                return NULL;
+            }
+            else if(fsm_ret == 2){
+                fatalError(FSM_FATAL_ERROR2);
+                return NULL;
+            }
         }
     }
 
