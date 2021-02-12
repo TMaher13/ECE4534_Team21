@@ -33,6 +33,7 @@ extern BaseType_t writeSensorQueue(QueueHandle_t handle, struct sensorQueueStruc
 extern int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg);
 
 extern QueueHandle_t sensor_handle;
+extern QueueHandle_t uart_handle;
 
 extern void dbgEvent(unsigned int event);
 extern void fatalError(unsigned int event);
@@ -66,7 +67,7 @@ void *sensorThread(void *arg0) {
 
         dbgEvent(AFTER_READ_SENSOR_QUEUE);
 
-        fsm_ret = sensorFSM( sensor_handle, &sensorData );
+        fsm_ret = sensorFSM( uart_handle, &sensorData );
         if(fsm_ret == 1){
             fatalError(FSM_FATAL_ERROR1);
             return NULL;

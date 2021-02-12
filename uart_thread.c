@@ -43,7 +43,7 @@ extern void fatalError(unsigned int event);
 int sub_uart_send(UART_Handle uart_send, char *message){
 
     dbgEvent(BEFORE_WRITE_UART_BUS);
-    UART_write(uart_send, message, sizeof(BUFFER_SIZE));
+    UART_write(uart_send, message, BUFFER_SIZE);
     dbgEvent(AFTER_WRITE_UART_BUS);
     return 1;
 
