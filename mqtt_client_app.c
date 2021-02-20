@@ -101,7 +101,8 @@ extern int32_t ti_net_SlNet_initConfig();
 #define MQTT_CONNECTION_PORT_NUMBER     8883
 #endif
 
-mqd_t appQueue;
+//mqd_t appQueue;
+//TODO: Replace connected global variable
 int connected;
 int deinit;
 Timer_Handle timer0;
@@ -288,10 +289,13 @@ int32_t SetClientIdNamefromMacAddress()
     return(ret);
 }
 
+//NOT NEEDED FOR THE PURPOSES OF THIS MILESTONE
+/*
 void timerCallback(Timer_Handle myHandle)
 {
     longPress = 1;
 }
+*/
 
 // this timer callback toggles the LED once per second until the device connects to an AP
 void timerLEDCallback(Timer_Handle myHandle)
@@ -299,6 +303,8 @@ void timerLEDCallback(Timer_Handle myHandle)
     GPIO_toggle(CONFIG_GPIO_LED_0);
 }
 
+//NOT NEEDED FOR THE PURPOSES OF THIS MILESTONE. PUBLISH FROM OWN THREADS INSTEAD
+/*
 void pushButtonPublishHandler(uint_least8_t index)
 {
     int ret;
@@ -312,7 +318,10 @@ void pushButtonPublishHandler(uint_least8_t index)
         LOG_ERROR("msg queue send error %d", ret);
     }
 }
+*/
 
+//NOT NEEDED FOR THE PURPOSES OF THIS MILESTONE. PUBLISH FROM OWN THREADS INSTEAD.
+/*
 void pushButtonConnectionHandler(uint_least8_t index)
 {
     int ret;
@@ -332,7 +341,10 @@ void pushButtonConnectionHandler(uint_least8_t index)
         LOG_ERROR("msg queue send error %d", ret);
     }
 }
+*/
 
+//NOT NEEDED FOR PURPOSES OF THIS MILESTONE
+/*
 int detectLongPress(){
 
     int buttonPressed;
@@ -352,7 +364,7 @@ int detectLongPress(){
         return 0;
     }
 }
-
+*/
 
 void MQTT_EventCallback(int32_t event){
 
@@ -364,26 +376,30 @@ void MQTT_EventCallback(int32_t event){
         {
             deinit = 0;
             connected = 1;
-            LOG_INFO("MQTT_EVENT_CONNACK\r\n");
-            GPIO_clearInt(CONFIG_GPIO_BUTTON_1);
-            GPIO_enableInt(CONFIG_GPIO_BUTTON_1);
+            //TODO: REPLACE WITH DEBUG ROUTINE:
+            //LOG_INFO("MQTT_EVENT_CONNACK\r\n");
+            //GPIO_clearInt(CONFIG_GPIO_BUTTON_1);
+            //GPIO_enableInt(CONFIG_GPIO_BUTTON_1);
             break;
         }
 
         case MQTT_EVENT_SUBACK:
         {
+            //TODO: REPLACE WITH DEBUG ROUTINE:
             LOG_INFO("MQTT_EVENT_SUBACK\r\n");
             break;
         }
 
         case MQTT_EVENT_PUBACK:
         {
+            //TODO: REPLACE WITH DEBUG ROUTINE:
             LOG_INFO("MQTT_EVENT_PUBACK\r\n");
             break;
         }
 
         case MQTT_EVENT_UNSUBACK:
         {
+            //TODO: REPLACE WITH DEBUG ROUTINE:
             LOG_INFO("MQTT_EVENT_UNSUBACK\r\n");
             break;
         }
@@ -391,10 +407,11 @@ void MQTT_EventCallback(int32_t event){
         case MQTT_EVENT_CLIENT_DISCONNECT:
         {
             connected = 0;
+            //TODO: REPLACE WITH DEBUG ROUTINE:
             LOG_INFO("MQTT_EVENT_CLIENT_DISCONNECT\r\n");
             if(deinit == 0){
-                GPIO_clearInt(CONFIG_GPIO_BUTTON_1);
-                GPIO_enableInt(CONFIG_GPIO_BUTTON_1);
+                //GPIO_clearInt(CONFIG_GPIO_BUTTON_1);
+                //GPIO_enableInt(CONFIG_GPIO_BUTTON_1);
             }
             break;
         }
@@ -403,7 +420,8 @@ void MQTT_EventCallback(int32_t event){
         {
             connected = 0;
 
-            LOG_INFO("MQTT_EVENT_SERVER_DISCONNECT\r\n");
+            //TODO: REPLACE WITH DEBUG ROUTINE:
+            //LOG_INFO("MQTT_EVENT_SERVER_DISCONNECT\r\n");
 
             queueElement.event = APP_MQTT_CON_TOGGLE;
             int res = mq_send(appQueue, (const char*)&queueElement, sizeof(struct msgQueue), 0);
@@ -499,7 +517,8 @@ int WifiInit(){
     ret |= pthread_attr_setdetachstate(&pattrs_spawn, PTHREAD_CREATE_DETACHED);
     ret = pthread_create(&spawn_thread, &pattrs_spawn, sl_Task, NULL);
     if(ret != 0){
-        LOG_ERROR("could not create simplelink task\n\r");
+        //TODO: REPLACE WITH DEBUG ROUTINE:
+        //LOG_ERROR("could not create simplelink task\n\r");
         while(1);
     }
 
@@ -509,7 +528,8 @@ int WifiInit(){
 
     ret = Network_IF_InitDriver(ROLE_STA);
     if(ret < 0){
-        LOG_ERROR("Failed to start SimpleLink Device\n\r");
+        //TODO: REPLACE WITH DEBUG ROUTINE:
+        //LOG_ERROR("Failed to start SimpleLink Device\n\r");
         while(1);
     }
 
@@ -525,12 +545,14 @@ int WifiInit(){
 
     ret = Timer_start(timer0);
     if(ret < 0){
-        LOG_ERROR("failed to start the timer\r\n");
+        //TODO: REPLACE WITH DEBUG ROUTINE:
+        //LOG_ERROR("failed to start the timer\r\n");
     }
 
     ret = Network_IF_ConnectAP(SSID_NAME, security_params);
     if(ret < 0){
-        LOG_ERROR("Connection to an AP failed\n\r");
+        //TODO: REPLACE WITH DEBUG ROUTINE:
+        //LOG_ERROR("Connection to an AP failed\n\r");
     }
     else{
 
@@ -542,9 +564,11 @@ int WifiInit(){
 
         ret = sl_WlanProfileAdd((signed char*)SSID_NAME, strlen(SSID_NAME), 0, &securityParams, NULL, 7, 0);
         if(ret < 0){
-            LOG_ERROR("failed to add profile %s\r\n", SSID_NAME);
+            //TODO: REPLACE WITH DEBUG ROUTINE:
+            //LOG_ERROR("failed to add profile %s\r\n", SSID_NAME);
         }
         else{
+            //TODO: REPLACE WITH DEBUG ROUTINE:
             LOG_INFO("profile added %s\r\n", SSID_NAME);
         }
     }
@@ -580,8 +604,11 @@ void mainThread(void * args){
     GPIO_write(CONFIG_GPIO_LED_1, CONFIG_GPIO_LED_OFF);
     GPIO_write(CONFIG_GPIO_LED_2, CONFIG_GPIO_LED_OFF);
 
+    //NOT NEEDED FOR THE PURPOSES OF THIS DEMO
+    /*
     GPIO_setCallback(CONFIG_GPIO_BUTTON_0, pushButtonPublishHandler);
     GPIO_setCallback(CONFIG_GPIO_BUTTON_1, pushButtonConnectionHandler);
+    */
 
 
     // configuring the timer to toggle an LED until the AP is connected
@@ -593,7 +620,8 @@ void mainThread(void * args){
 
     timer0 = Timer_open(CONFIG_TIMER_0, &params);
     if (timer0 == NULL) {
-        LOG_ERROR("failed to initialize timer\r\n");
+        //TODO: REPLACE WITH DEBUG ROUTINE:
+        //LOG_ERROR("failed to initialize timer\r\n");
         while(1);
     }
 
@@ -620,7 +648,8 @@ void mainThread(void * args){
 
     timer0 = Timer_open(CONFIG_TIMER_0, &params);
     if (timer0 == NULL) {
-        LOG_ERROR("failed to initialize timer\r\n");
+        //TODO: REPLACE WITH DEBUG ROUTINE:
+        //LOG_ERROR("failed to initialize timer\r\n");
         while(1);
     }
 
@@ -649,7 +678,8 @@ MQTT_DEMO:
         while(1);
     }
     else{
-        LOG_INFO("Subscribed to all topics successfully\r\n");
+        //TODO: REPLACE WITH DEBUG ROUTINE:
+        //LOG_INFO("Subscribed to all topics successfully\r\n");
     }
 
     mqttClientHandle = MQTT_IF_Connect(mqttClientParams, mqttConnParams, MQTT_EventCallback);
@@ -660,7 +690,7 @@ MQTT_DEMO:
     // wait for CONNACK
     while(connected == 0);
 
-    GPIO_enableInt(CONFIG_GPIO_BUTTON_0);
+    //GPIO_enableInt(CONFIG_GPIO_BUTTON_0);
 
     while(1){
 
@@ -668,7 +698,8 @@ MQTT_DEMO:
 
         if(queueElement.event == APP_MQTT_PUBLISH){
 
-            LOG_TRACE("APP_MQTT_PUBLISH\r\n");
+            //TODO: REPLACE WITH DEBUG ROUTINE:
+            //LOG_TRACE("APP_MQTT_PUBLISH\r\n");
 
             MQTT_IF_Publish(mqttClientHandle,
                             "cc32xx/ToggleLED1",
@@ -676,23 +707,26 @@ MQTT_DEMO:
                             strlen("LED 1 toggle\r\n"),
                             MQTT_QOS_2);
 
-            GPIO_clearInt(CONFIG_GPIO_BUTTON_0);
-            GPIO_enableInt(CONFIG_GPIO_BUTTON_0);
+            //GPIO_clearInt(CONFIG_GPIO_BUTTON_0);
+            //GPIO_enableInt(CONFIG_GPIO_BUTTON_0);
         }
         else if(queueElement.event == APP_MQTT_CON_TOGGLE){
 
-            LOG_TRACE("APP_MQTT_CON_TOGGLE %d\r\n", connected);
+            //TODO: REPLACE WITH DEBUG ROUTINE:
+            //LOG_TRACE("APP_MQTT_CON_TOGGLE %d\r\n", connected);
 
 
             if(connected){
                 ret = MQTT_IF_Disconnect(mqttClientHandle);
                 if(ret >= 0){
+                    //TODO: Replace global variable
                     connected = 0;
                 }
             }
             else{
                 mqttClientHandle = MQTT_IF_Connect(mqttClientParams, mqttConnParams, MQTT_EventCallback);
                 if((int)mqttClientHandle >= 0){
+                    //TODO: Replace global variable
                     connected = 1;
                 }
             }
@@ -706,19 +740,20 @@ MQTT_DEMO:
 
             ret = detectLongPress();
             if(ret == 0){
-
-                LOG_TRACE("APP_BTN_HANDLER SHORT PRESS\r\n");
+                //TODO: REPLACE WITH DEBUG ROUTINE:
+                //LOG_TRACE("APP_BTN_HANDLER SHORT PRESS\r\n");
                 queueElement.event = APP_MQTT_CON_TOGGLE;
             }
             else{
-
-                LOG_TRACE("APP_BTN_HANDLER LONG PRESS\r\n");
+                //TODO: REPLACE WITH DEBUG ROUTINE:
+                //LOG_TRACE("APP_BTN_HANDLER LONG PRESS\r\n");
                 queueElement.event = APP_MQTT_DEINIT;
             }
 
             ret = mq_send(appQueue, (const char*)&queueElement, sizeof(struct msgQueue), 0);
             if(ret < 0){
-                LOG_ERROR("msg queue send error %d", ret);
+                //TODO: REPLACE WITH DEBUG ROUTINE:
+                //LOG_ERROR("msg queue send error %d", ret);
             }
         }
     }
@@ -729,7 +764,8 @@ MQTT_DEMO:
     }
     MQTT_IF_Deinit();
 
-    LOG_INFO("looping the MQTT functionality of the example for demonstration purposes only\r\n");
+    //TODO: REPLACE WITH DEBUG ROUTINE:
+    //LOG_INFO("looping the MQTT functionality of the example for demonstration purposes only\r\n");
     sleep(2);
     goto MQTT_DEMO;
 }
