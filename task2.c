@@ -64,7 +64,7 @@ void *task2Thread(void *arg0) {
 
             //set payload
             memset(jsonStr, 0, PAYLOAD_SIZE);
-            snprintf(jsonStr, PAYLOAD_SIZE, "dog");
+            snprintf(jsonStr, PAYLOAD_SIZE, chainData.secret);
             memcpy(publish.payload,jsonStr, PAYLOAD_SIZE);
 
             publishQueueRet = writeQueue(publish_handle, &publish);
@@ -78,7 +78,7 @@ void *task2Thread(void *arg0) {
                 fatalError(FSM_FATAL_ERROR2);
                 return NULL;
             }
-
+            */
         }
 
     }

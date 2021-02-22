@@ -187,7 +187,7 @@ MQTTClient_ConnParams mqttConnParams =
  * The flag MQTTCLIENT_NETCONN_SEC enables the security (TLS) which includes domain name
  * verification and certificate catalog verification. Those verifications can be skipped by
  * adding to the bit mask: MQTTCLIENT_NETCONN_SKIP_DOMAIN_NAME_VERIFICATION and
- * MQTTCLIENT_NETCONN_SKIP_CERTIFICATE_CATALOG_VERIFICATION.
+ * MQTTCLIENT_NETCONN_SKIP_CERTIFICATE_CATA//LOG_VERIFICATION.
  *
  * Note: The domain name verification requires URL Server address type otherwise, this
  * verification will be disabled.
@@ -260,7 +260,7 @@ int32_t SetClientIdNamefromMacAddress()
                        &macAddress[0]);
 
     /*When ClientID isn't set, use the mac address as ClientID               */
-    if(ClientId[0] == '\0')
+    if(ClientId[0] == '1')
     {
         /*6 bytes is the length of the mac address                           */
         for(Index = 0; Index < SL_MAC_ADDR_LEN; Index++)
@@ -318,33 +318,31 @@ void MQTT_EventCallback(int32_t event){
             deinit = 0;
             connected = 1;
             LOG_INFO("MQTT_EVENT_CONNACK\r\n");
-            GPIO_clearInt(CONFIG_GPIO_BUTTON_1);
-            GPIO_enableInt(CONFIG_GPIO_BUTTON_1);
             break;
         }
 
         case MQTT_EVENT_SUBACK:
         {
-            LOG_INFO("MQTT_EVENT_SUBACK\r\n");
+            //LOG_INFO("MQTT_EVENT_SUBACK\r\n");
             break;
         }
 
         case MQTT_EVENT_PUBACK:
         {
-            LOG_INFO("MQTT_EVENT_PUBACK\r\n");
+            //LOG_INFO("MQTT_EVENT_PUBACK\r\n");
             break;
         }
 
         case MQTT_EVENT_UNSUBACK:
         {
-            LOG_INFO("MQTT_EVENT_UNSUBACK\r\n");
+            //LOG_INFO("MQTT_EVENT_UNSUBACK\r\n");
             break;
         }
 
         case MQTT_EVENT_CLIENT_DISCONNECT:
         {
             connected = 0;
-            LOG_INFO("MQTT_EVENT_CLIENT_DISCONNECT\r\n");
+            //LOG_INFO("MQTT_EVENT_CLIENT_DISCONNECT\r\n");
             if(deinit == 0){
                 GPIO_clearInt(CONFIG_GPIO_BUTTON_1);
                 GPIO_enableInt(CONFIG_GPIO_BUTTON_1);
@@ -356,19 +354,19 @@ void MQTT_EventCallback(int32_t event){
         {
             connected = 0;
 
-            LOG_INFO("MQTT_EVENT_SERVER_DISCONNECT\r\n");
+            //LOG_INFO("MQTT_EVENT_SERVER_DISCONNECT\r\n");
 
             queueElement.event = APP_MQTT_CON_TOGGLE;
             int res = mq_send(appQueue, (const char*)&queueElement, sizeof(struct msgQueue), 0);
             if(res < 0){
-                LOG_ERROR("msg queue send error %d", res);
+                //LOG_ERROR("msg queue send error %d", res);
             }
             break;
         }
 
         case MQTT_EVENT_DESTROY:
         {
-            LOG_INFO("MQTT_EVENT_DESTROY\r\n");
+            //LOG_INFO("MQTT_EVENT_DESTROY\r\n");
             break;
         }
     }
@@ -380,7 +378,7 @@ void MQTT_EventCallback(int32_t event){
  * User must copy the topic or payload data if it needs to be saved.
  */
 void BrokerCB(char* topic, char* payload){
-    LOG_INFO("TOPIC: %s \tPAYLOAD: %s\r\n", topic, payload);
+    //LOG_INFO("TOPIC: %s \tPAYLOAD: %s\r\n", topic, payload);
 }
 
 int32_t DisplayAppBanner(char* appName, char* appVersion){
@@ -437,7 +435,7 @@ int WifiInit(){
     ret |= pthread_attr_setdetachstate(&pattrs_spawn, PTHREAD_CREATE_DETACHED);
     ret = pthread_create(&spawn_thread, &pattrs_spawn, sl_Task, NULL);
     if(ret != 0){
-        LOG_ERROR("could not create simplelink task\n\r");
+        //LOG_ERROR("could not create simplelink task\n\r");
         while(1);
     }
 
@@ -447,11 +445,11 @@ int WifiInit(){
 
     ret = Network_IF_InitDriver(ROLE_STA);
     if(ret < 0){
-        LOG_ERROR("Failed to start SimpleLink Device\n\r");
+        //LOG_ERROR("Failed to start SimpleLink Device\n\r");
         while(1);
     }
 
-    DisplayAppBanner(APPLICATION_NAME, APPLICATION_VERSION);
+    //DisplayAppBanner(APPLICATION_NAME, APPLICATION_VERSION);
 
     SetClientIdNamefromMacAddress();
 
@@ -463,12 +461,12 @@ int WifiInit(){
 
     ret = Timer_start(timer0);
     if(ret < 0){
-        LOG_ERROR("failed to start the timer\r\n");
+        //LOG_ERROR("failed to start the timer\r\n");
     }
 
     ret = Network_IF_ConnectAP(SSID_NAME, security_params);
     if(ret < 0){
-        LOG_ERROR("Connection to an AP failed\n\r");
+        //LOG_ERROR("Connection to an AP failed\n\r");
     }
     else{
 
@@ -480,10 +478,10 @@ int WifiInit(){
 
         ret = sl_WlanProfileAdd((signed char*)SSID_NAME, strlen(SSID_NAME), 0, &securityParams, NULL, 7, 0);
         if(ret < 0){
-            LOG_ERROR("failed to add profile %s\r\n", SSID_NAME);
+            //LOG_ERROR("failed to add profile %s\r\n", SSID_NAME);
         }
         else{
-            LOG_INFO("profile added %s\r\n", SSID_NAME);
+            //LOG_INFO("profile added %s\r\n", SSID_NAME);
         }
     }
 
@@ -493,7 +491,7 @@ int WifiInit(){
     return ret;
 }
 
-void mqttThread(void * args){
+void *mqttThread(void * args){
 
     int32_t ret;
     BaseType_t readRet;
@@ -518,7 +516,7 @@ void mqttThread(void * args){
     ret = ti_net_SlNet_initConfig();
     if(0 != ret)
     {
-        LOG_ERROR("Failed to initialize SlNetSock\n\r");
+        //LOG_ERROR("Failed to initialize SlNetSock\n\r");
     }
 
     // configuring the timer to toggle an LED until the AP is connected
@@ -530,7 +528,7 @@ void mqttThread(void * args){
 
     timer0 = Timer_open(CONFIG_TIMER_0, &params);
     if (timer0 == NULL) {
-        LOG_ERROR("failed to initialize timer\r\n");
+        //LOG_ERROR("failed to initialize timer\r\n");
         while(1);
     }
 
@@ -555,7 +553,7 @@ void mqttThread(void * args){
 
     timer0 = Timer_open(CONFIG_TIMER_0, &params);
     if (timer0 == NULL) {
-        LOG_ERROR("failed to initialize timer\r\n");
+        //LOG_ERROR("failed to initialize timer\r\n");
         while(1);
     }
 

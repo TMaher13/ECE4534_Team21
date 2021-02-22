@@ -92,11 +92,11 @@ int main(void)
     GPIO_init();
 
     //Task1
-    sensor_handle = createSensorQueue(10, sizeof(struct sensorQueueStruct));
-    publish_handle = createQueue(10, sizeof(struct publishQueueStruct));
+    sensor_handle = createSensorQueue(5, sizeof(struct sensorQueueStruct));
+    publish_handle = createQueue(5, sizeof(struct publishQueueStruct));
 
     //Task2
-    chain_handle = createQueue(10, sizeof(struct chainQueueStruct));
+    chain_handle = createQueue(5, sizeof(struct chainQueueStruct));
 
     if(sensor_handle == NULL)
         return (1);
@@ -111,10 +111,9 @@ int main(void)
 
 
     createSensorThread(THREADSTACKSIZE, 1);
+    createTask2Thread(THREADSTACKSIZE, 1);
 
     //createTask2Thread
-
-    createTask2Thread(THREADSTACKSIZE, 1);
 
     /* Set priority and stack size attributes */
     pthread_attr_init(&pAttrs);
@@ -152,6 +151,8 @@ int main(void)
             ;
         }
     }
+
+
 
     /* Start the FreeRTOS scheduler */
     vTaskStartScheduler();
