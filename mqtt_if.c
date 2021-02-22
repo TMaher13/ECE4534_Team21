@@ -7,12 +7,17 @@
 
 #include <mqtt_if.h>
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
 #include <mqueue.h>
 
 #include "debug_if.h"
+
+#include "sensor_thread_queue.h"
+
+extern void writeChainQueueCallback(const void *m);
 
 
 enum{
@@ -103,6 +108,19 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
             char *payload;
 
             receivedMetaData = (MQTTClient_RecvMetaDataCB *)metaData;
+
+            struct chainQueueStruct chainData;
+            snprintf(chainData.secret, SECRET_SIZE, "test");
+
+            if (strncmp(receivedMetaData->topic, "chain1", receivedMetaData->topLen) == 0)
+            {
+                LOG_INFO("Compared Topic Successfully\r\n");
+                writeChainQueueCallback(&chainData);
+            }
+            else
+            {
+                LOG_INFO("Topic received does not match\r\n");
+            }
 
             // copying received topic data locally to send over msg queue
             topic = (char*)malloc(receivedMetaData->topLen+1);

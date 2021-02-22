@@ -41,6 +41,7 @@
 /* RTOS header files */
 #include "FreeRTOS.h"
 #include "task.h"
+#include "queue.h"
 
 /* TI-RTOS Header files */
 #include <ti/drivers/GPIO.h>
@@ -48,10 +49,31 @@
 /* TI-DRIVERS Header files */
 #include "ti_drivers_config.h"
 
-extern void * mainThread(void *arg0);
+#include <queue_structs.h>
+
+extern void * mqttThread(void *arg0);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE   4096
+
+extern void timer500Init();
+extern void timer70Init();
+extern void debugInit();
+
+extern QueueHandle_t createSensorQueue(unsigned int queueLen, unsigned int itemSize);
+extern QueueHandle_t createQueue(unsigned int queueLen, unsigned int itemSize);
+
+extern int createSensorThread(int threadStackSize, int prio);
+extern int createTask2Thread(int threadStackSize, int prio);
+
+//Version 1
+QueueHandle_t sensor_handle;
+
+//Task2
+QueueHandle_t chain_handle;
+
+//Publish Queue
+QueueHandle_t publish_handle;
 
 /*
  *  ======== main ========
@@ -66,6 +88,33 @@ int main(void)
 
     /* Call board init functions */
     Board_init();
+    debugInit();
+    GPIO_init();
+
+    //Task1
+    sensor_handle = createSensorQueue(10, sizeof(struct sensorQueueStruct));
+    publish_handle = createQueue(10, sizeof(struct publishQueueStruct));
+
+    //Task2
+    chain_handle = createQueue(10, sizeof(struct chainQueueStruct));
+
+    if(sensor_handle == NULL)
+        return (1);
+    if(publish_handle == NULL)
+        return(1);
+
+    if(chain_handle == NULL)
+        return(1);
+
+    timer70Init();
+    timer500Init();
+
+
+    createSensorThread(THREADSTACKSIZE, 1);
+
+    //createTask2Thread
+
+    createTask2Thread(THREADSTACKSIZE, 1);
 
     /* Set priority and stack size attributes */
     pthread_attr_init(&pAttrs);
@@ -94,7 +143,7 @@ int main(void)
         }
     }
 
-    retc = pthread_create(&thread, &pAttrs, mainThread, NULL);
+    retc = pthread_create(&thread, &pAttrs, mqttThread, NULL);
     if(retc != 0)
     {
         /* pthread_create() failed */
