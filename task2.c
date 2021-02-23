@@ -87,13 +87,13 @@ void *task2Thread(void *arg0) {
 
             //set topic
 #if USER_ID == 0
-            snprintf(publish.topic, TOPIC_SIZE, "chain2");
+            snprintf(publish.topic, TOPIC_SIZE, "chain0");
 #elif USER_ID == 1
-            snprintf(publish.topic, TOPIC_SIZE, "chain3");
-#elif USER_ID == 2
-            snprintf(publish.topic, TOPIC_SIZE, "chain4");
-#elif USER_ID == 3
             snprintf(publish.topic, TOPIC_SIZE, "chain1");
+#elif USER_ID == 2
+            snprintf(publish.topic, TOPIC_SIZE, "chain2");
+#elif USER_ID == 3
+            snprintf(publish.topic, TOPIC_SIZE, "chain3");
 #endif
             //set payload
             memset(publish.payload, 0, PAYLOAD_SIZE);
