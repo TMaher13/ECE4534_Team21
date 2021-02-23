@@ -27,6 +27,8 @@ int sensorFSM(QueueHandle_t publish_handle, struct sensorQueueStruct *sensorMsg)
 
     int avg;
 
+    static int publishAttempts = 0;
+
     switch(fsmState) {
 
         case 0: // INIT_AVERAGE
@@ -75,6 +77,18 @@ int sensorFSM(QueueHandle_t publish_handle, struct sensorQueueStruct *sensorMsg)
 
                 publishQueueRet = writeQueue(publish_handle, &publish);
 
+                publishAttempts++;
+
+                //set topic
+                snprintf(publish.topic, TOPIC_SIZE, "connorStat");
+
+                //set payload
+                memset(jsonStr, 0, PAYLOAD_SIZE);
+                snprintf(jsonStr, PAYLOAD_SIZE, "{\"publishAttempts\":\"%d\"}", publishAttempts);
+                memcpy(publish.payload,jsonStr, PAYLOAD_SIZE);
+
+                publishQueueRet = writeQueue(publish_handle, &publish);
+
                 sensorTotal = 0;
                 sensorCount = 0;
                 fsmState = 0;
@@ -104,6 +118,18 @@ int sensorFSM(QueueHandle_t publish_handle, struct sensorQueueStruct *sensorMsg)
                 memset(jsonStr, 0, PAYLOAD_SIZE);
                 snprintf(jsonStr, PAYLOAD_SIZE, "{\"messageID\":\"%d\",\"value1\":\"%d\",\"value2\":\"%d\"}", TIMER70_MESSAGE, sensorCount, sensorMsg->value);
                 memcpy(publish.payload,jsonStr, PAYLOAD_SIZE);
+                publishQueueRet = writeQueue(publish_handle, &publish);
+
+                publishAttempts++;
+
+                //set topic
+                snprintf(publish.topic, TOPIC_SIZE, "connorStat");
+
+                //set payload
+                memset(jsonStr, 0, PAYLOAD_SIZE);
+                snprintf(jsonStr, PAYLOAD_SIZE, "{\"publishAttempts\":\"%d\"}", publishAttempts);
+                memcpy(publish.payload,jsonStr, PAYLOAD_SIZE);
+
                 publishQueueRet = writeQueue(publish_handle, &publish);
 
             }

@@ -343,10 +343,6 @@ void MQTT_EventCallback(int32_t event){
         {
             connected = 0;
             //LOG_INFO("MQTT_EVENT_CLIENT_DISCONNECT\r\n");
-            if(deinit == 0){
-                GPIO_clearInt(CONFIG_GPIO_BUTTON_1);
-                GPIO_enableInt(CONFIG_GPIO_BUTTON_1);
-            }
             break;
         }
 
@@ -378,7 +374,7 @@ void MQTT_EventCallback(int32_t event){
  * User must copy the topic or payload data if it needs to be saved.
  */
 void BrokerCB(char* topic, char* payload){
-    //LOG_INFO("TOPIC: %s \tPAYLOAD: %s\r\n", topic, payload);
+    LOG_INFO("TOPIC: %s \tPAYLOAD: %s\r\n", topic, payload);
 }
 
 int32_t DisplayAppBanner(char* appName, char* appVersion){
@@ -501,10 +497,7 @@ void *mqttThread(void * args){
     struct msgQueue queueElement;
     MQTTClient_Handle mqttClientHandle;
 
-
     struct publishQueueStruct publishData;
-    static int publishAttempts = 0;
-    static char publishAttemptsStr[32];
 
     uartHandle = InitTerm();
     UART_control(uartHandle, UART_CMD_RXDISABLE, NULL);
@@ -574,7 +567,10 @@ void *mqttThread(void * args){
      * messages for the client, after CONNACK the client may receive the messages before the module is aware
      * of the topic callbacks. The user may still call subscribe after connect but have to be aware of this.
      */
+
     ret = MQTT_IF_Subscribe(mqttClientHandle, "chain1", MQTT_QOS_0, BrokerCB);
+    ret |= MQTT_IF_Subscribe(mqttClientHandle, "kevin_sensor", MQTT_QOS_0, BrokerCB);
+
     if(ret < 0){
         while(1);
     }
@@ -599,7 +595,18 @@ void *mqttThread(void * args){
         //TODO: Jsonize the variables in the publishData struct
 
         if(readRet == pdTRUE) {
-            publishAttempts++;
+
+            MQTT_IF_Publish(mqttClientHandle,
+                            publishData.topic,
+                            publishData.payload,
+                            strlen(publishData.payload),
+                            MQTT_QOS_0);
+        }
+    }
+}
+
+/*
+ *             publishAttempts++;
             sprintf(publishAttemptsStr, "{\"publishAttemptsStr\":\"%d\"}", publishAttempts);
 
             MQTT_IF_Publish(mqttClientHandle,
@@ -608,14 +615,14 @@ void *mqttThread(void * args){
                             strlen(publishData.payload),
                             MQTT_QOS_0);
 
+            //Version1
             MQTT_IF_Publish(mqttClientHandle,
                             "connor_stats",
                             publishAttemptsStr,
                             strlen(publishAttemptsStr),
                             MQTT_QOS_0);
-        }
-    }
-}
+
+ */
 
 //*****************************************************************************
 //

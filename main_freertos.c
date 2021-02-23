@@ -58,6 +58,7 @@ extern void * mqttThread(void *arg0);
 
 extern void timer500Init();
 extern void timer70Init();
+extern void timer1000Init();
 extern void debugInit();
 
 extern QueueHandle_t createSensorQueue(unsigned int queueLen, unsigned int itemSize);
@@ -65,9 +66,13 @@ extern QueueHandle_t createQueue(unsigned int queueLen, unsigned int itemSize);
 
 extern int createSensorThread(int threadStackSize, int prio);
 extern int createTask2Thread(int threadStackSize, int prio);
+extern int createReceiveThread(int threadStackSize, int prio);
 
 //Version 1
 QueueHandle_t sensor_handle;
+
+//Version2
+QueueHandle_t receive_handle;
 
 //Task2
 QueueHandle_t chain_handle;
@@ -91,30 +96,47 @@ int main(void)
     debugInit();
     GPIO_init();
 
-    //Task1
+    //Version1
     sensor_handle = createSensorQueue(5, sizeof(struct sensorQueueStruct));
-    publish_handle = createQueue(5, sizeof(struct publishQueueStruct));
+
+    if(sensor_handle == NULL)
+        return (1);
+
+    //Version2
+    receive_handle = createQueue(5, sizeof(struct receiveQueueStruct));
+
+    if (receive_handle == NULL)
+        return(1);
 
     //Task2
     chain_handle = createQueue(5, sizeof(struct chainQueueStruct));
 
-    if(sensor_handle == NULL)
-        return (1);
-    if(publish_handle == NULL)
-        return(1);
-
     if(chain_handle == NULL)
         return(1);
 
+    publish_handle = createQueue(5, sizeof(struct publishQueueStruct));
+
+    if(publish_handle == NULL)
+        return(1);
+
+    //version1
     timer70Init();
     timer500Init();
 
+    //version2
+    timer1000Init();
 
-    createSensorThread(THREADSTACKSIZE, 1);
+    //version1
+    //createSensorThread(THREADSTACKSIZE, 1);
+
+    //version2
+    createReceiveThread(THREADSTACKSIZE, 1);
+
+    //task2
     createTask2Thread(THREADSTACKSIZE, 1);
 
-    //createTask2Thread
 
+    //overall mqtt thread for all TI's
     /* Set priority and stack size attributes */
     pthread_attr_init(&pAttrs);
     priParam.sched_priority = 1;

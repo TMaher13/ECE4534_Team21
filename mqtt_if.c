@@ -19,6 +19,8 @@
 
 extern BaseType_t writeChainQueueCallback(const void *m);
 
+extern QueueHandle_t receive_handle;
+
 
 enum{
     MQTT_STATE_IDLE,
@@ -112,12 +114,20 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
             struct chainQueueStruct chainData;
             snprintf(chainData.secret, SECRET_SIZE, "test");
 
+            struct receiveQueueStruct receiveData;
+            receiveData.messageType = TIMER1000_MESSAGE;
+
             if (strncmp(receivedMetaData->topic, "chain1", receivedMetaData->topLen) == 0)
             {
                 //LOG_INFO("Compared Topic Successfully\r\n");
                 writeChainQueueCallback(&chainData);
             }
-            else
+            else if (strncmp(receivedMetaData->topic, "kevin_sensor", receivedMetaData->topLen) == 0)
+            {
+                //LOG_INFO("Topic received does not match\r\n");
+                writeQueue(receive_handle, &receiveData);
+            }
+            else if (strncmp(receivedMetaData->topic, "joseph_sensor", receivedMetaData->topLen) == 0)
             {
                 //LOG_INFO("Topic received does not match\r\n");
             }

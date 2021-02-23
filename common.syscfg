@@ -36,6 +36,7 @@ const Timer          = scripting.addModule("/ti/drivers/Timer");
 const Timer1         = Timer.addInstance();
 const Timer2         = Timer.addInstance();
 const Timer3         = Timer.addInstance();
+const Timer4         = Timer.addInstance();
 const Watchdog       = scripting.addModule("/ti/drivers/Watchdog");
 const Watchdog1      = Watchdog.addInstance();
 const SimpleLinkWifi = scripting.addModule("/ti/drivers/net/wifi/SimpleLinkWifi");
@@ -119,11 +120,17 @@ Timer1.$name         = "CONFIG_TIMER_0";
 Timer1.timerType     = "32 Bits";
 Timer1.timer.$assign = "Timer0";
 
-Timer2.$name     = "CONFIG_TIMER_1";
-Timer2.timerType = "32 Bits";
+Timer2.$name         = "CONFIG_TIMER_1";
+Timer2.timerType     = "32 Bits";
+Timer2.timer.$assign = "Timer1";
 
-Timer3.$name     = "CONFIG_TIMER_2";
-Timer3.timerType = "32 Bits";
+Timer3.$name         = "CONFIG_TIMER_2";
+Timer3.timerType     = "32 Bits";
+Timer3.timer.$assign = "Timer2";
+
+Timer4.$name         = "CONFIG_TIMER_3";
+Timer4.timerType     = "32 Bits";
+Timer4.timer.$assign = "Timer3";
 
 Watchdog1.$name            = "CONFIG_WATCHDOG_0";
 Watchdog1.watchdog.$assign = "WATCHDOG0";
@@ -142,5 +149,3 @@ GPIO5.gpioPin.$suggestSolution  = "boosterpack.10";
 GPIO11.gpioPin.$suggestSolution = "boosterpack.28";
 GPIO12.gpioPin.$suggestSolution = "boosterpack.2";
 GPIO13.gpioPin.$suggestSolution = "boosterpack.26";
-Timer2.timer.$suggestSolution   = "Timer2";
-Timer3.timer.$suggestSolution   = "Timer1";

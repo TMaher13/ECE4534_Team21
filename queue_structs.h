@@ -10,6 +10,9 @@ extern const uint_least8_t          TIMER70_MESSAGE_CONST;
 extern const uint_least8_t          TIMER500_MESSAGE_CONST;
 #define TIMER500_MESSAGE            1
 
+extern const uint_least8_t          TIMER1000_MESSAGE_CONST;
+#define TIMER1000_MESSAGE           2
+
 extern const uint_least8_t          TOPIC_SIZE_CONST;
 #define TOPIC_SIZE                  64
 
@@ -27,6 +30,13 @@ struct sensorQueueStruct {
     uint_least8_t messageType;
     uint32_t value;
 
+};
+
+struct receiveQueueStruct {
+
+    uint_least8_t messageType;
+    uint32_t value1;
+    uint32_t value2;
 };
 
 struct publishQueueStruct {
