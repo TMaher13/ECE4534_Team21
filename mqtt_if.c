@@ -20,10 +20,11 @@
 
 #include "sensor_thread_queue.h"
 
-extern BaseType_t writeChainQueueCallback(const void *m);
+//extern BaseType_t writeChainQueueCallback(const void *m);
 extern BaseType_t writeQueue(QueueHandle_t handle, const void *data);
 
 extern QueueHandle_t receive_handle;
+extern QueueHandle_t chain_handle;
 
 
 enum{
@@ -72,8 +73,7 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
     static struct receiveQueueStruct receiveData;
 
     jsmn_parser parser;
-    jsmntok_t parse_tok[16];
-
+    jsmntok_t parse_tok[8];
     jsmn_init(&parser);
 
     switch((MQTTClient_EventCB)event)
@@ -123,13 +123,29 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
 
             receivedMetaData = (MQTTClient_RecvMetaDataCB *)metaData;
 
-            snprintf(chainData.secret, SECRET_SIZE, "test");
+            //snprintf(chainData.secret, SECRET_SIZE, "test");
             //receiveData.messageType = TIMER1000_MESSAGE;
 
-            if (strncmp(receivedMetaData->topic, "chain1", receivedMetaData->topLen) == 0)
-            {
-                //LOG_INFO("Compared Topic Successfully\r\n");
-                writeChainQueueCallback(&chainData);
+            if (strncmp(receivedMetaData->topic, "chain1", receivedMetaData->topLen) == 0) {
+                int ret = jsmn_parse(&parser, data, strlen(data), parse_tok,
+                                     sizeof(parse_tok) / sizeof(parse_tok[0]));
+
+                char str[SECRET_SIZE];
+                sprintf(str, "%d", ret);
+                //UART_PRINT(data);
+
+                int i;
+                for (i = 1; i < ret; ++i) {
+                    if (jsoneq(data, &parse_tok[i], "secret") == 0) {
+
+                        memset(chainData.secret, 0, SECRET_SIZE);
+                        strncpy(chainData.secret, data + parse_tok[i + 1].start, parse_tok[i+1].end - parse_tok[i+1].start);
+                        //UART_PRINT(chainData.secret);
+                        break;
+                    }
+                }
+
+                writeQueue(chain_handle, &chainData);
             }
             else if (strncmp(receivedMetaData->topic, "joseph_sensor", receivedMetaData->topLen) == 0)
             {

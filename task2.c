@@ -14,6 +14,10 @@
 #include <task.h>
 #include <queue.h>
 
+#include "uart_term.h"
+
+#include "user_def.h"
+
 #include <ti/drivers/GPIO.h>
 #include <ti_drivers_config.h>
 
@@ -68,7 +72,6 @@ void *task2Thread(void *arg0) {
 
     //create payload (JSON String)
     static struct publishQueueStruct publish;
-    char jsonStr[PAYLOAD_SIZE];
 
     //dbgEvent(BEFORE_SENSOR_LOOP);
 
@@ -82,6 +85,10 @@ void *task2Thread(void *arg0) {
 
         if(readRet == pdTRUE) {
 
+            UART_PRINT(chainData.secret);
+            task2Computation(chainData.secret);
+            UART_PRINT(chainData.secret);
+
 #if USER_ID == 0
             snprintf(publish.topic, TOPIC_SIZE, "chain0");
 #elif USER_ID == 1
@@ -92,8 +99,8 @@ void *task2Thread(void *arg0) {
             snprintf(publish.topic, TOPIC_SIZE, "chain3");
 #endif
             //set payload
-            memset(publish.payload, 0, PAYLOAD_SIZE);
-            memcpy(publish.payload,chainData.secret, PAYLOAD_SIZE);
+            memset(publish.payload, 0, SECRET_SIZE);
+            snprintf(publish.payload, SECRET_SIZE, "{\"secret\":\"%s\"}", chainData.secret);
 
             publishQueueRet = writeQueue(publish_handle, &publish);
         }
