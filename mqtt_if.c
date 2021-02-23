@@ -130,10 +130,8 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
                 int ret = jsmn_parse(&parser, data, strlen(data), parse_tok,
                                      sizeof(parse_tok) / sizeof(parse_tok[0]));
 
-                char str[SECRET_SIZE];
-                sprintf(str, "%d", ret);
-                //UART_PRINT(data);
-
+                UART_PRINT(data);
+                UART_PRINT("\n");
                 int i;
                 for (i = 1; i < ret; ++i) {
                     if (jsoneq(data, &parse_tok[i], "secret") == 0) {

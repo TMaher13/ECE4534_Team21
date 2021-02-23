@@ -4,7 +4,7 @@
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_PROGRAM.CC3220SF.ccxml.Texas Instruments XDS110 USB Debug Probe_0/Cortex_M4_0" value="${build_artifact:IntercomponentCommunication_CC3220SF_LAUNCHXL_freertos_ccs2}"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_PROJECT.CC3220SF.ccxml.Texas Instruments XDS110 USB Debug Probe_0/Cortex_M4_0" value="IntercomponentCommunication_CC3220SF_LAUNCHXL_freertos_ccs2"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_TARGET_CONFIG" value="${target_config_active_default:IntercomponentCommunication_CC3220SF_LAUNCHXL_freertos_ccs2}"/>
-<stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.CC3220SF.ccxml.Texas Instruments XDS110 USB Debug Probe_0/Cortex_M4_0" value="C:\Users\kevinkingchea\embeddedSystems\ECE4534_Team21\Debug\IntercomponentCommunication_CC3220SF_LAUNCHXL_freertos_ccs2.out"/>
+<stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.CC3220SF.ccxml.Texas Instruments XDS110 USB Debug Probe_0/Cortex_M4_0" value="C:\Users\Thomas\Documents\Virginia_Tech\VT_2021_Spring\ECE4534\SourceCodeRepo\ECE4534_Team21\Debug\IntercomponentCommunication_CC3220SF_LAUNCHXL_freertos_ccs2.out"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
 <listEntry value="/IntercomponentCommunication_CC3220SF_LAUNCHXL_freertos_ccs2"/>
 </listAttribute>

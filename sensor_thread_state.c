@@ -48,25 +48,6 @@ int sensorFSM(QueueHandle_t publish_handle, struct sensorQueueStruct *sensorMsg)
                 else
                     avg = 0.0;
 
-                /*
-                memset(uartMsg, 0, PAYLOAD_SIZE);
-                snprintf(uartMsg, PAYLOAD_SIZE, "Avg = %dmm; Time = %dms", avg, sensorMsg->value);
-                memcpy(uart.msg,uartMsg, PAYLOAD_SIZE);
-
-                //dbgEvent(BEFORE_WRITE_UART_QUEUE_TIMER500);
-                uartQueueRet = writeUARTQueue(uart_handle, &uart);
-                //dbgEvent(AFTER_WRITE_UART_QUEUE_TIMER500);
-                if(uartQueueRet != pdPASS) {
-                    fatalError(WRITE_UART_QUEUE_FATAL_ERROR_TIMER500);
-                }
-                *
-                *
-                *fill
-                *
-                *
-                *
-                */
-
                 //set topic
                 snprintf(publish.topic, TOPIC_SIZE, "joseph_sensor");
 

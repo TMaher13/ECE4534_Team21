@@ -66,7 +66,7 @@ void *task2Thread(void *arg0) {
 
     //dbgEvent(ENTER_SENSOR_TASK);
 
-    struct chainQueueStruct chainData;
+    static struct chainQueueStruct chainData;
     BaseType_t readRet;
     BaseType_t publishQueueRet;
 
@@ -85,16 +85,14 @@ void *task2Thread(void *arg0) {
 
         if(readRet == pdTRUE) {
 
-            UART_PRINT(chainData.secret);
             task2Computation(chainData.secret);
-            UART_PRINT(chainData.secret);
 
 #if USER_ID == 0
             snprintf(publish.topic, TOPIC_SIZE, "chain0");
 #elif USER_ID == 1
             snprintf(publish.topic, TOPIC_SIZE, "chain1");
 #elif USER_ID == 2
-            snprintf(publish.topic, TOPIC_SIZE, "chain2");
+            snprintf(publish.topic, TOPIC_SIZE, "chain3");
 #elif USER_ID == 3
             snprintf(publish.topic, TOPIC_SIZE, "chain3");
 #endif

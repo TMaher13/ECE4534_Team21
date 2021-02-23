@@ -85,7 +85,7 @@ extern int32_t ti_net_SlNet_initConfig();
 #define MQTT_MODULE_TASK_STACK_SIZE 2048
 
 #define MQTT_WILL_TOPIC             "jesus_cc32xx_will_topic"
-#define MQTT_WILL_MSG               "will_msg_works"
+#define MQTT_WILL_MSG               "will_msg_worksThomas"
 #define MQTT_WILL_QOS               MQTT_QOS_0
 #define MQTT_WILL_RETAIN            false
 
@@ -98,7 +98,7 @@ extern int32_t ti_net_SlNet_initConfig();
 
 #ifndef MQTT_SECURE_CLIENT
 #define MQTT_CONNECTION_FLAGS           MQTTCLIENT_NETCONN_IP4
-#define MQTT_CONNECTION_ADDRESS         "73.99.194.128"
+#define MQTT_CONNECTION_ADDRESS         "10.0.0.136"
 #define MQTT_CONNECTION_PORT_NUMBER     1883
 #else
 #define MQTT_CONNECTION_FLAGS           MQTTCLIENT_NETCONN_IP4 | MQTTCLIENT_NETCONN_SEC
@@ -371,7 +371,7 @@ void MQTT_EventCallback(int32_t event){
  * User must copy the topic or payload data if it needs to be saved.
  */
 void BrokerCB(char* topic, char* payload){
-    //LOG_INFO("TOPIC: %s \tPAYLOAD: %s\r\n", topic, payload);
+    LOG_INFO("TOPIC: %s \tPAYLOAD: %s\r\n", topic, payload);
 }
 
 int32_t DisplayAppBanner(char* appName, char* appVersion){
@@ -566,7 +566,7 @@ void *mqttThread(void * args){
      */
 
     ret = MQTT_IF_Subscribe(mqttClientHandle, "chain1", MQTT_QOS_0, BrokerCB);
-    ret |= MQTT_IF_Subscribe(mqttClientHandle, "joseph_sensor", MQTT_QOS_0, BrokerCB);
+    ret |= MQTT_IF_Subscribe(mqttClientHandle, "kevin_sensor", MQTT_QOS_0, BrokerCB);
 
     if(ret < 0){
         while(1);
@@ -589,10 +589,10 @@ void *mqttThread(void * args){
     while(1){
 
         readRet = readQueue(publish_handle, &publishData);
-        //TODO: Jsonize the variables in the publishData struct
 
         if(readRet == pdTRUE) {
 
+            //LOG_INFO("Publishing message");
             MQTT_IF_Publish(mqttClientHandle,
                             publishData.topic,
                             publishData.payload,

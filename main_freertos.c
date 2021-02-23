@@ -97,10 +97,10 @@ int main(void)
     GPIO_init();
 
     //Version1
-    sensor_handle = createSensorQueue(5, sizeof(struct sensorQueueStruct));
+    //sensor_handle = createSensorQueue(5, sizeof(struct sensorQueueStruct));
 
-    if(sensor_handle == NULL)
-        return (1);
+    //if(sensor_handle == NULL)
+    //    return (1);
 
     //Version2
     receive_handle = createQueue(5, sizeof(struct receiveQueueStruct));
