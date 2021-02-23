@@ -13,7 +13,10 @@
 #include <pthread.h>
 #include <mqueue.h>
 
+#include "uart_term.h"
+
 #include "debug_if.h"
+#include "jsmn.h"
 
 #include "sensor_thread_queue.h"
 
@@ -65,6 +68,14 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
     int status;
     struct msgQueue queueElement;
 
+    static struct chainQueueStruct chainData;
+    static struct receiveQueueStruct receiveData;
+
+    jsmn_parser parser;
+    jsmntok_t parse_tok[16];
+
+    jsmn_init(&parser);
+
     switch((MQTTClient_EventCB)event)
     {
         case MQTTClient_OPERATION_CB_EVENT:
@@ -112,11 +123,8 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
 
             receivedMetaData = (MQTTClient_RecvMetaDataCB *)metaData;
 
-            struct chainQueueStruct chainData;
             snprintf(chainData.secret, SECRET_SIZE, "test");
-
-            struct receiveQueueStruct receiveData;
-            receiveData.messageType = TIMER1000_MESSAGE;
+            //receiveData.messageType = TIMER1000_MESSAGE;
 
             if (strncmp(receivedMetaData->topic, "chain1", receivedMetaData->topLen) == 0)
             {
@@ -125,12 +133,54 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
             }
             else if (strncmp(receivedMetaData->topic, "joseph_sensor", receivedMetaData->topLen) == 0)
             {
-                //LOG_INFO("Topic received does not match\r\n");
+                int ret = jsmn_parse(&parser, data, strlen(data), parse_tok,
+                                     sizeof(parse_tok) / sizeof(parse_tok[0]));
+
+                if (ret < 0)
+                {
+                    receiveData.messageType = 3;
+                }
+                else if (ret < 1 || parse_tok[0].type != JSMN_OBJECT)
+                {
+                    receiveData.messageType = 3;
+                }
+
+                int msgFound = 0;
+                int i;
+                for (i = 1; i < ret; ++i)
+                {
+                    if (jsoneq(data, &parse_tok[i], "messageType") == 0)
+                    {
+                        receiveData.messageType = (int_least8_t) strtol(
+                                data + parse_tok[i + 1].start, (char**) NULL, 10);
+                        msgFound += 1;
+                        i++;
+                    }
+                    else if (jsoneq(data, &parse_tok[i], "value1") == 0)
+                    {
+                        receiveData.value1 = (uint32_t) strtol(
+                                data + parse_tok[i + 1].start, (char**) NULL, 10);
+                        msgFound += 1;
+                        i++;
+                    }
+                    else if (jsoneq(data, &parse_tok[i], "value2") == 0)
+                    {
+                        receiveData.value2 = (uint32_t) strtol(
+                                data + parse_tok[i + 1].start, (char**) NULL, 10);
+                        msgFound += 1;
+                        i++;
+                    }
+                }
+
+                if (msgFound != 3)
+                {
+                    receiveData.messageType = 3;
+                    LOG_INFO("bad payload happened");
+                }
+
+                UART_PRINT(data);
+
                 writeQueue(receive_handle, &receiveData);
-            }
-            else if (strncmp(receivedMetaData->topic, "joseph_sensor", receivedMetaData->topLen) == 0)
-            {
-                //LOG_INFO("Topic received does not match\r\n");
             }
 
             // copying received topic data locally to send over msg queue

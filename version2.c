@@ -72,7 +72,7 @@ void *receiveThread(void *arg0) {
             publishReceived++;
             if (receiveData.messageType == TIMER70_MESSAGE){
                 totalMessages++;
-                totalReadings = receiveData.value1;
+                totalReadings = totalReadings + receiveData.value1;
             }
             else if (receiveData.messageType == TIMER500_MESSAGE){
                 totalMessages++;
@@ -81,7 +81,6 @@ void *receiveThread(void *arg0) {
             }
             else if (receiveData.messageType == TIMER1000_MESSAGE){
                 int avg = readingsAvgTotal / avgCount;
-                int total = totalMessages;
                 int numMessages = totalReadings;
 
                 //set topic
@@ -89,7 +88,7 @@ void *receiveThread(void *arg0) {
 
                 //set payload
                 memset(jsonStr, 0, PAYLOAD_SIZE);
-                snprintf(jsonStr, PAYLOAD_SIZE, "{\"messageCounter\":\"%d\",\"totalMessages\":\"%d\",\"totalReadings\":\"%d\",\"avgReadings\":\"%d\"}", publishReceived, total, numMessages, avg);
+                snprintf(jsonStr, PAYLOAD_SIZE, "{\"messageCounter\":\"%d\",\"totalMessages\":\"%d\",\"totalReadings\":\"%d\",\"avgReadings\":\"%d\"}", publishReceived, totalMessages, numMessages, avg);
                 memcpy(publish.payload,jsonStr, PAYLOAD_SIZE);
 
                 //send to publish queue
@@ -107,7 +106,18 @@ void *receiveThread(void *arg0) {
 
                 }
                 else{
-                    //we fucked up
+                    snprintf(publish.topic, TOPIC_SIZE, "badPayload");
+
+                    //set payload
+                    memset(jsonStr, 0, PAYLOAD_SIZE);
+                    snprintf(jsonStr, PAYLOAD_SIZE, "{\"value1\":\"%d\",\"value2\":\"%d\"}", receiveData.value1, receiveData.value2);
+                    memcpy(publish.payload,jsonStr, PAYLOAD_SIZE);
+
+                    //send to publish queue
+                    publishQueueRet = writeQueue(publish_handle, &publish);
+                    if (publishQueueRet == 0){
+                        //DEBUG_EVENT
+                    }
                 }
 
                 //set topic

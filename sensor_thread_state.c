@@ -72,7 +72,7 @@ int sensorFSM(QueueHandle_t publish_handle, struct sensorQueueStruct *sensorMsg)
 
                 //set payload
                 memset(jsonStr, 0, PAYLOAD_SIZE);
-                snprintf(jsonStr, PAYLOAD_SIZE, "{\"messageID\":\"%d\",\"value1\":\"%d\",\"value2\":\"%d\"}", TIMER500_MESSAGE, avg, sensorMsg->value);
+                snprintf(jsonStr, PAYLOAD_SIZE, "{\"messageType\":\"%d\",\"value1\":\"%d\",\"value2\":\"%d\"}", TIMER500_MESSAGE, avg, sensorMsg->value);
                 memcpy(publish.payload,jsonStr, PAYLOAD_SIZE);
 
                 publishQueueRet = writeQueue(publish_handle, &publish);
@@ -116,7 +116,7 @@ int sensorFSM(QueueHandle_t publish_handle, struct sensorQueueStruct *sensorMsg)
 
                 //set payload
                 memset(jsonStr, 0, PAYLOAD_SIZE);
-                snprintf(jsonStr, PAYLOAD_SIZE, "{\"messageID\":\"%d\",\"value1\":\"%d\",\"value2\":\"%d\"}", TIMER70_MESSAGE, sensorCount, sensorMsg->value);
+                snprintf(jsonStr, PAYLOAD_SIZE, "{\"messageType\":\"%d\",\"value1\":\"%d\",\"value2\":\"%d\"}", TIMER70_MESSAGE, sensorCount, sensorMsg->value);
                 memcpy(publish.payload,jsonStr, PAYLOAD_SIZE);
                 publishQueueRet = writeQueue(publish_handle, &publish);
 
