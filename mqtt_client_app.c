@@ -31,7 +31,6 @@
  */
 
 /*****************************************************************************
-
    Application Name     -   MQTT Client
    Application Overview -   The device is running a MQTT client which is
                            connected to the online broker. Three LEDs on the
@@ -39,9 +38,7 @@
                            publishing msg on appropriate topics. Similarly,
                            message can be published on pre-configured topics
                            by pressing the switch buttons on the device.
-
    Application Details  - Refer to 'MQTT Client' README.html
-
 *****************************************************************************/
 #include <mqtt_if.h>
 #include <stdlib.h>
@@ -494,7 +491,7 @@ void *mqttThread(void * args){
     mq_attr attr;
     Timer_Params params;
     UART_Handle uartHandle;
-
+    struct msgQueue queueElement;
     MQTTClient_Handle mqttClientHandle;
 
     struct publishQueueStruct publishData;
@@ -592,6 +589,7 @@ void *mqttThread(void * args){
     while(1){
 
         readRet = readQueue(publish_handle, &publishData);
+        //TODO: Jsonize the variables in the publishData struct
 
         if(readRet == pdTRUE) {
 
@@ -607,20 +605,17 @@ void *mqttThread(void * args){
 /*
  *             publishAttempts++;
             sprintf(publishAttemptsStr, "{\"publishAttemptsStr\":\"%d\"}", publishAttempts);
-
             MQTT_IF_Publish(mqttClientHandle,
                             publishData.topic,
                             publishData.payload,
                             strlen(publishData.payload),
                             MQTT_QOS_0);
-
             //Version1
             MQTT_IF_Publish(mqttClientHandle,
                             "connor_stats",
                             publishAttemptsStr,
                             strlen(publishAttemptsStr),
                             MQTT_QOS_0);
-
  */
 
 //*****************************************************************************
