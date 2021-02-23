@@ -124,13 +124,13 @@ int main(void)
     timer500Init();
 
     //version2
-    timer1000Init();
+    //timer1000Init();
 
     //version1
-    //createSensorThread(THREADSTACKSIZE, 1);
+    createSensorThread(THREADSTACKSIZE, 1);
 
     //version2
-    createReceiveThread(THREADSTACKSIZE, 1);
+    //createReceiveThread(THREADSTACKSIZE, 1);
 
     //task2
     createTask2Thread(THREADSTACKSIZE, 1);

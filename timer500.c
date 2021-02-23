@@ -68,8 +68,10 @@ void timer500Callback(Timer_Handle myHandle, int_fast16_t status)
 
     TickType_t tickCount = xTaskGetTickCountFromISR();
 
-    uint32_t msec = convertTicks2ms(tickCount) - lastTime;
-    lastTime = msec;
+    uint32_t present = convertTicks2ms(tickCount);
+
+    uint32_t msec = present - lastTime;
+    lastTime = present;
 
     m.messageType = TIMER500_MESSAGE;
     m.value = msec;

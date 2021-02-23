@@ -86,7 +86,7 @@ extern int32_t ti_net_SlNet_initConfig();
 
 #define MQTT_WILL_TOPIC             "jesus_cc32xx_will_topic"
 #define MQTT_WILL_MSG               "will_msg_works"
-#define MQTT_WILL_QOS               MQTT_QOS_2
+#define MQTT_WILL_QOS               MQTT_QOS_0
 #define MQTT_WILL_RETAIN            false
 
 #define MQTT_CLIENT_PASSWORD        NULL
@@ -119,7 +119,7 @@ extern QueueHandle_t publish_handle;
 /* Client ID                                                                 */
 /* If ClientId isn't set, the MAC address of the device will be copied into  */
 /* the ClientID parameter.                                                   */
-char ClientId[13] = {'1'};
+char ClientId[13] = {'\0'};
 
 enum{
     APP_MQTT_PUBLISH,
@@ -257,7 +257,7 @@ int32_t SetClientIdNamefromMacAddress()
                        &macAddress[0]);
 
     /*When ClientID isn't set, use the mac address as ClientID               */
-    if(ClientId[0] == '1')
+    if(ClientId[0] == '\0')
     {
         /*6 bytes is the length of the mac address                           */
         for(Index = 0; Index < SL_MAC_ADDR_LEN; Index++)
@@ -371,7 +371,7 @@ void MQTT_EventCallback(int32_t event){
  * User must copy the topic or payload data if it needs to be saved.
  */
 void BrokerCB(char* topic, char* payload){
-    LOG_INFO("TOPIC: %s \tPAYLOAD: %s\r\n", topic, payload);
+    //LOG_INFO("TOPIC: %s \tPAYLOAD: %s\r\n", topic, payload);
 }
 
 int32_t DisplayAppBanner(char* appName, char* appVersion){
@@ -566,7 +566,7 @@ void *mqttThread(void * args){
      */
 
     ret = MQTT_IF_Subscribe(mqttClientHandle, "chain1", MQTT_QOS_0, BrokerCB);
-    ret |= MQTT_IF_Subscribe(mqttClientHandle, "kevin_sensor", MQTT_QOS_0, BrokerCB);
+    ret |= MQTT_IF_Subscribe(mqttClientHandle, "joseph_sensor", MQTT_QOS_0, BrokerCB);
 
     if(ret < 0){
         while(1);

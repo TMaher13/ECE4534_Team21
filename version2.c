@@ -97,24 +97,7 @@ void *receiveThread(void *arg0) {
                 if (publishQueueRet == 0){
                     //DEBUG_EVENT
                 }
-
-
                 publishAttempts++;
-
-                //set topic
-                snprintf(publish.topic, TOPIC_SIZE, "connorStat");
-
-                //set payload
-                memset(jsonStr, 0, PAYLOAD_SIZE);
-                snprintf(jsonStr, PAYLOAD_SIZE, "{\"publishReceived\":\"%d\",\"publishAttempts\":\"%d\"}", publishReceived, publishAttempts);
-                memcpy(publish.payload,jsonStr, PAYLOAD_SIZE);
-
-                //send to publish queue
-                publishQueueRet = writeQueue(publish_handle, &publish);
-                if (publishQueueRet == 0){
-                    //DEBUG_EVENT
-                }
-
 
                 //reset counts every publish
                 readingsAvgTotal = 0;
@@ -122,12 +105,28 @@ void *receiveThread(void *arg0) {
                 totalMessages = 0;
                 totalReadings = 0;
 
-            }
-            else{
-                //we fucked up
-            }
+                }
+                else{
+                    //we fucked up
+                }
 
-        }
+                //set topic
+                snprintf(publish.topic, TOPIC_SIZE, "connorStat");
+
+                //set payload
+                memset(jsonStr, 0, PAYLOAD_SIZE);
+                snprintf(jsonStr, PAYLOAD_SIZE,
+                         "{\"publishReceived\":\"%d\",\"publishAttempts\":\"%d\"}",
+                         publishReceived, publishAttempts);
+                memcpy(publish.payload, jsonStr, PAYLOAD_SIZE);
+
+                //send to publish queue
+                publishQueueRet = writeQueue(publish_handle, &publish);
+                if (publishQueueRet == 0)
+                {
+                    //DEBUG_EVENT
+                }
+            }
     }
 }
 

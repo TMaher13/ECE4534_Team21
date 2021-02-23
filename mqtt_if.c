@@ -18,6 +18,7 @@
 #include "sensor_thread_queue.h"
 
 extern BaseType_t writeChainQueueCallback(const void *m);
+extern BaseType_t writeQueue(QueueHandle_t handle, const void *data);
 
 extern QueueHandle_t receive_handle;
 
@@ -122,7 +123,7 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
                 //LOG_INFO("Compared Topic Successfully\r\n");
                 writeChainQueueCallback(&chainData);
             }
-            else if (strncmp(receivedMetaData->topic, "kevin_sensor", receivedMetaData->topLen) == 0)
+            else if (strncmp(receivedMetaData->topic, "joseph_sensor", receivedMetaData->topLen) == 0)
             {
                 //LOG_INFO("Topic received does not match\r\n");
                 writeQueue(receive_handle, &receiveData);

@@ -68,7 +68,7 @@ int sensorFSM(QueueHandle_t publish_handle, struct sensorQueueStruct *sensorMsg)
                 */
 
                 //set topic
-                snprintf(publish.topic, TOPIC_SIZE, "kevin_sensor");
+                snprintf(publish.topic, TOPIC_SIZE, "joseph_sensor");
 
                 //set payload
                 memset(jsonStr, 0, PAYLOAD_SIZE);
@@ -112,7 +112,7 @@ int sensorFSM(QueueHandle_t publish_handle, struct sensorQueueStruct *sensorMsg)
                 */
 
                 //set topic
-                snprintf(publish.topic, TOPIC_SIZE, "kevin_sensor");
+                snprintf(publish.topic, TOPIC_SIZE, "joseph_sensor");
 
                 //set payload
                 memset(jsonStr, 0, PAYLOAD_SIZE);
