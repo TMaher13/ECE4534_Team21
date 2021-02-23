@@ -34,6 +34,31 @@ extern void fatalError(unsigned int event);
 #include <task.h>
 #include <queue.h>
 
+#include "user_def.h"
+
+
+void task2Computation(char* chainStr) {
+    int i;
+
+#if USER_ID == 0
+    for(i=0; i<strlen(chainStr); i += 2) chainStr[i] = 'A';
+    chainStr[0] = '0';
+
+#elif USER_ID == 1
+    for(i=1; i<strlen(chainStr); i += 2) chainStr[i] = 'B';
+    chainStr[0] = '1';
+
+#elif USER_ID == 2
+    for(i=0; i<strlen(chainStr); i += 2) chainStr[i] = 'C';
+    chainStr[0] = '2';
+
+#elif USER_ID == 3
+    for(i=1; i<strlen(chainStr); i += 2) chainStr[i] = 'D';
+    chainStr[0] = '3';
+
+#endif
+}
+
 
 void *task2Thread(void *arg0) {
 
@@ -45,7 +70,6 @@ void *task2Thread(void *arg0) {
 
     //create payload (JSON String)
     static struct publishQueueStruct publish;
-    char jsonStr[PAYLOAD_SIZE];
 
     //dbgEvent(BEFORE_SENSOR_LOOP);
 
@@ -59,13 +83,21 @@ void *task2Thread(void *arg0) {
 
         if(readRet == pdTRUE) {
 
-            //set topic
-            snprintf(publish.topic, TOPIC_SIZE, "chain2");
+            task2Computation(&(chainData.secret));
 
+            //set topic
+#if USER_ID == 0
+            snprintf(publish.topic, TOPIC_SIZE, "chain2");
+#elif USER_ID == 1
+            snprintf(publish.topic, TOPIC_SIZE, "chain3");
+#elif USER_ID == 2
+            snprintf(publish.topic, TOPIC_SIZE, "chain4");
+#elif USER_ID == 3
+            snprintf(publish.topic, TOPIC_SIZE, "chain1");
+#endif
             //set payload
-            memset(jsonStr, 0, PAYLOAD_SIZE);
-            snprintf(jsonStr, PAYLOAD_SIZE, chainData.secret);
-            memcpy(publish.payload,jsonStr, PAYLOAD_SIZE);
+            memset(publish.payload, 0, PAYLOAD_SIZE);
+            memcpy(publish.payload,chainData.secret, PAYLOAD_SIZE);
 
             publishQueueRet = writeQueue(publish_handle, &publish);
 

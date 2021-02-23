@@ -15,9 +15,13 @@
 
 #include "debug_if.h"
 
+#include "jsmn.h"
+
 #include "sensor_thread_queue.h"
 
 extern BaseType_t writeChainQueueCallback(const void *m);
+
+extern BaseType_t writeQueue(QueueHandle_t handle, const void * data);
 
 extern QueueHandle_t receive_handle;
 
@@ -63,6 +67,11 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
 {
     int status;
     struct msgQueue queueElement;
+    static struct chainQueueStruct chainData;
+
+    jsmn_parser parser;
+    jsmntok_t parse_tok[128];
+    jsmn_init(&parser);
 
     switch((MQTTClient_EventCB)event)
     {
@@ -111,8 +120,27 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
 
             receivedMetaData = (MQTTClient_RecvMetaDataCB *)metaData;
 
-            struct chainQueueStruct chainData;
-            snprintf(chainData.secret, SECRET_SIZE, "test");
+            int ret = jsmn_parse(&parser, data, strlen(data), parse_tok, sizeof(parse_tok) / sizeof(parse_tok[0]));
+
+            if(ret < 0) {
+                chainData.secret[0] = (char)0;
+            }
+            else if (ret < 1 || parse_tok[0].type != JSMN_OBJECT) {
+                chainData.secret[0] = (char)0;
+            }
+
+            int msgFound = 0;
+            int i;
+            for(i=1; i<ret; ++i) {
+                if(jsoneq(data, &parse_tok[i], "secret") == 0) {
+                    strncpy(chainData.secret, data+parse_tok[i+1].start, parse_tok[i + 1].end - parse_tok[i + 1].start);
+                    msgFound = 1;
+                }
+            }
+
+            if(!msgFound) {
+                chainData.secret[0] = (char)0;
+            }
 
             struct receiveQueueStruct receiveData;
             receiveData.messageType = TIMER1000_MESSAGE;
