@@ -37,7 +37,7 @@ extern void fatalError(unsigned int event);
 #include "user_def.h"
 
 
-void task2Computation(char* chainStr) {
+void task2Computation(char chainStr[SECRET_SIZE]) {
     int i;
 
 #if USER_ID == 0

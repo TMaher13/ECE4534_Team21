@@ -70,7 +70,18 @@ void *receiveThread(void *arg0) {
         if(readRet == pdTRUE) {
 
             publishReceived++;
-            if (receiveData.messageType == TIMER70_MESSAGE){
+            if(receiveData.messageType == BAD_PAYLOAD) {
+                snprintf(publish.topic, TOPIC_SIZE, "bad_payload");
+
+                memcpy(publish.payload,"Version 2 of Task 1 received an invalid payload\n", PAYLOAD_SIZE);
+
+                //send to publish queue
+                publishQueueRet = writeQueue(publish_handle, &publish);
+                if (publishQueueRet == 0) {
+                    //DEBUG_EVENT
+                }
+            }
+            else if (receiveData.messageType == TIMER70_MESSAGE){
                 totalMessages++;
                 totalReadings = receiveData.value1;
             }
@@ -124,7 +135,15 @@ void *receiveThread(void *arg0) {
 
             }
             else{
-                //we fucked up
+                snprintf(publish.topic, TOPIC_SIZE, "bad_payload");
+
+                memcpy(publish.payload,"Version 2 of Task 1 received an unexpected error\n", PAYLOAD_SIZE);
+
+                //send to publish queue
+                publishQueueRet = writeQueue(publish_handle, &publish);
+                if (publishQueueRet == 0) {
+                    //DEBUG_EVENT
+                }
             }
 
         }

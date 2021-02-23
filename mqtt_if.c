@@ -15,6 +15,8 @@
 
 #include "debug_if.h"
 
+#include "user_def.h"
+
 #include "jsmn.h"
 
 #include "sensor_thread_queue.h"
@@ -66,8 +68,10 @@ static struct mqttContext
 void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, void *data, uint32_t dataLen)
 {
     int status;
-    struct msgQueue queueElement;
+    static struct msgQueue queueElement;
+
     static struct chainQueueStruct chainData;
+    static struct receiveQueueStruct receiveData;
 
     jsmn_parser parser;
     jsmntok_t parse_tok[128];
@@ -120,45 +124,162 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
 
             receivedMetaData = (MQTTClient_RecvMetaDataCB *)metaData;
 
-            int ret = jsmn_parse(&parser, data, strlen(data), parse_tok, sizeof(parse_tok) / sizeof(parse_tok[0]));
 
-            if(ret < 0) {
-                chainData.secret[0] = (char)0;
-            }
-            else if (ret < 1 || parse_tok[0].type != JSMN_OBJECT) {
-                chainData.secret[0] = (char)0;
-            }
-
-            int msgFound = 0;
-            int i;
-            for(i=1; i<ret; ++i) {
-                if(jsoneq(data, &parse_tok[i], "secret") == 0) {
-                    strncpy(chainData.secret, data+parse_tok[i+1].start, parse_tok[i + 1].end - parse_tok[i + 1].start);
-                    msgFound = 1;
-                }
-            }
-
-            if(!msgFound) {
-                chainData.secret[0] = (char)0;
-            }
-
-            struct receiveQueueStruct receiveData;
             receiveData.messageType = TIMER1000_MESSAGE;
 
-            if (strncmp(receivedMetaData->topic, "chain1", receivedMetaData->topLen) == 0)
-            {
+#if USER_ID == 0
+            if (strncmp(receivedMetaData->topic, "chain3", receivedMetaData->topLen) == 0) {
+                int ret = jsmn_parse(&parser, data, strlen(data), parse_tok,
+                                 sizeof(parse_tok) / sizeof(parse_tok[0]));
+
+                if (ret < 0) {
+                    chainData.secret[0] = (char) 0;
+                }
+                else if (ret < 1 || parse_tok[0].type != JSMN_OBJECT) {
+                    chainData.secret[0] = (char) 0;
+                }
+
+                int msgFound = 0;
+                int i;
+                for (i = 1; i < ret; ++i) {
+                    if (jsoneq(data, &parse_tok[i], "secret") == 0) {
+                        strncpy(chainData.secret, data + parse_tok[i + 1].start,
+                                parse_tok[i + 1].end - parse_tok[i + 1].start);
+                        msgFound = 1;
+                    }
+                }
+
+                if (!msgFound) {
+                    chainData.secret[0] = (char) 0;
+                }
                 //LOG_INFO("Compared Topic Successfully\r\n");
                 writeChainQueueCallback(&chainData);
             }
-            else if (strncmp(receivedMetaData->topic, "kevin_sensor", receivedMetaData->topLen) == 0)
+#elif USER_ID == 1
+            if (strncmp(receivedMetaData->topic, "chain0", receivedMetaData->topLen) == 0) {
+                            int ret = jsmn_parse(&parser, data, strlen(data), parse_tok,
+                                             sizeof(parse_tok) / sizeof(parse_tok[0]));
+
+                            if (ret < 0) {
+                                chainData.secret[0] = (char) 0;
+                            }
+                            else if (ret < 1 || parse_tok[0].type != JSMN_OBJECT) {
+                                chainData.secret[0] = (char) 0;
+                            }
+
+                            int msgFound = 0;
+                            int i;
+                            for (i = 1; i < ret; ++i) {
+                                if (jsoneq(data, &parse_tok[i], "secret") == 0) {
+                                    strncpy(chainData.secret, data + parse_tok[i + 1].start,
+                                            parse_tok[i + 1].end - parse_tok[i + 1].start);
+                                    msgFound = 1;
+                                }
+                            }
+
+                            if (!msgFound) {
+                                chainData.secret[0] = (char) 0;
+                            }
+                            //LOG_INFO("Compared Topic Successfully\r\n");
+                            writeChainQueueCallback(&chainData);
+                        }
+#elif USER_ID == 2
+            if (strncmp(receivedMetaData->topic, "chain1", receivedMetaData->topLen) == 0) {
+                            int ret = jsmn_parse(&parser, data, strlen(data), parse_tok,
+                                             sizeof(parse_tok) / sizeof(parse_tok[0]));
+
+                            if (ret < 0) {
+                                chainData.secret[0] = (char) 0;
+                            }
+                            else if (ret < 1 || parse_tok[0].type != JSMN_OBJECT) {
+                                chainData.secret[0] = (char) 0;
+                            }
+
+                            int msgFound = 0;
+                            int i;
+                            for (i = 1; i < ret; ++i) {
+                                if (jsoneq(data, &parse_tok[i], "secret") == 0) {
+                                    strncpy(chainData.secret, data + parse_tok[i + 1].start,
+                                            parse_tok[i + 1].end - parse_tok[i + 1].start);
+                                    msgFound = 1;
+                                }
+                            }
+
+                            if (!msgFound) {
+                                chainData.secret[0] = (char) 0;
+                            }
+                            //LOG_INFO("Compared Topic Successfully\r\n");
+                            writeChainQueueCallback(&chainData);
+                        }
+#elif USER_ID == 3
+            if (strncmp(receivedMetaData->topic, "chain2", receivedMetaData->topLen) == 0) {
+                            int ret = jsmn_parse(&parser, data, strlen(data), parse_tok,
+                                             sizeof(parse_tok) / sizeof(parse_tok[0]));
+
+                            if (ret < 0) {
+                                chainData.secret[0] = (char) 0;
+                            }
+                            else if (ret < 1 || parse_tok[0].type != JSMN_OBJECT) {
+                                chainData.secret[0] = (char) 0;
+                            }
+
+                            int msgFound = 0;
+                            int i;
+                            for (i = 1; i < ret; ++i) {
+                                if (jsoneq(data, &parse_tok[i], "secret") == 0) {
+                                    strncpy(chainData.secret, data + parse_tok[i + 1].start,
+                                            parse_tok[i + 1].end - parse_tok[i + 1].start);
+                                    msgFound = 1;
+                                }
+                            }
+
+                            if (!msgFound) {
+                                chainData.secret[0] = (char) 0;
+                            }
+                            //LOG_INFO("Compared Topic Successfully\r\n");
+                            writeChainQueueCallback(&chainData);
+                        }
+#endif
+#if USER_ID > 1
+            else if (strncmp(receivedMetaData->topic, "connor_sensor", receivedMetaData->topLen) == 0 ||
+                     strncmp(receivedMetaData->topic, "joseph_sensor", receivedMetaData->topLen) == 0)
             {
+
+                int ret = jsmn_parse(&parser, data, strlen(data), parse_tok,
+                                                             sizeof(parse_tok) / sizeof(parse_tok[0]));
+
+                if (ret < 0) {
+                    receiveData.messageType = -1;
+                }
+                else if (ret < 1 || parse_tok[0].type != JSMN_OBJECT) {
+                    receiveData.messageType = -1;
+                }
+
+                int msgFound = 0;
+                int i;
+                for (i = 1; i < ret; ++i) {
+                    if (jsoneq(data, &parse_tok[i], "messageType") == 0) {
+                        receiveData.messageType = (int_least8_t)strtol(data + parse_tok[i+1].start, (char **)NULL, 10);
+                        msgFound += 1;
+                    }
+                    else if(jsoneq(data, &parse_tok[i], "value1") == 0) {
+                        receiveData.value1 = (uint32_t)strtol(data + parse_tok[i+1].start, (char **)NULL, 10);
+                        msgFound += 1;
+                    }
+                    else if(jsoneq(data, &parse_tok[i], "value2") == 0) {
+                        receiveData.value2 = (uint32_t)strtol(data + parse_tok[i+1].start, (char **)NULL, 10);
+                        msgFound += 1;
+                   }
+                }
+
+                if (msgFound != 3) {
+                    receiveData.messageType = -1;
+                }
+
                 //LOG_INFO("Topic received does not match\r\n");
                 writeQueue(receive_handle, &receiveData);
             }
-            else if (strncmp(receivedMetaData->topic, "joseph_sensor", receivedMetaData->topLen) == 0)
-            {
-                //LOG_INFO("Topic received does not match\r\n");
-            }
+#endif
 
             // copying received topic data locally to send over msg queue
             topic = (char*)malloc(receivedMetaData->topLen+1);

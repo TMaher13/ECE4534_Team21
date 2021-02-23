@@ -4,14 +4,17 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-extern const uint_least8_t          TIMER70_MESSAGE_CONST;
+extern const int_least8_t           TIMER70_MESSAGE_CONST;
 #define TIMER70_MESSAGE             0
 
-extern const uint_least8_t          TIMER500_MESSAGE_CONST;
+extern const int_least8_t           TIMER500_MESSAGE_CONST;
 #define TIMER500_MESSAGE            1
 
-extern const uint_least8_t          TIMER1000_MESSAGE_CONST;
+extern const int_least8_t           TIMER1000_MESSAGE_CONST;
 #define TIMER1000_MESSAGE           2
+
+extern const int_least8_t           BAD_PAYLOAD_CONST;
+#define BAD_PAYLOAD                 -1
 
 extern const uint_least8_t          TOPIC_SIZE_CONST;
 #define TOPIC_SIZE                  64
@@ -34,7 +37,7 @@ struct sensorQueueStruct {
 
 struct receiveQueueStruct {
 
-    uint_least8_t messageType;
+    int_least8_t messageType;
     uint32_t value1;
     uint32_t value2;
 };

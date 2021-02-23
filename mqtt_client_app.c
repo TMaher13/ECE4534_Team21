@@ -494,7 +494,7 @@ void *mqttThread(void * args){
     mq_attr attr;
     Timer_Params params;
     UART_Handle uartHandle;
-    struct msgQueue queueElement;
+
     MQTTClient_Handle mqttClientHandle;
 
     struct publishQueueStruct publishData;
@@ -592,7 +592,6 @@ void *mqttThread(void * args){
     while(1){
 
         readRet = readQueue(publish_handle, &publishData);
-        //TODO: Jsonize the variables in the publishData struct
 
         if(readRet == pdTRUE) {
 
