@@ -24,7 +24,7 @@
 #include <queue_structs.h>
 #include <debug.h>
 
-extern BaseType_t readQueue(QueueHandle_t handle, void * const data);
+extern BaseType_t readQueue(QueueHandle_t handle, const void * data);
 extern BaseType_t writeQueue(QueueHandle_t handle, const void * data);
 
 extern QueueHandle_t chain_handle;
@@ -51,7 +51,7 @@ void task2Computation(char chainStr[SECRET_SIZE]) {
     chainStr[0] = '1';
 
 #elif USER_ID == 2
-    for(i=0; i<strlen(chainStr); i += 2) chainStr[i] = 'C';
+    for(i=1; i<strlen(chainStr); i += 2) chainStr[i] = 'C';
     chainStr[0] = '2';
 
 #elif USER_ID == 3
@@ -92,7 +92,7 @@ void *task2Thread(void *arg0) {
 #elif USER_ID == 1
             snprintf(publish.topic, TOPIC_SIZE, "chain1");
 #elif USER_ID == 2
-            snprintf(publish.topic, TOPIC_SIZE, "chain3");
+            snprintf(publish.topic, TOPIC_SIZE, "chain2");
 #elif USER_ID == 3
             snprintf(publish.topic, TOPIC_SIZE, "chain3");
 #endif

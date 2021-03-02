@@ -73,8 +73,7 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
     static struct receiveQueueStruct receiveData;
 
     jsmn_parser parser;
-    jsmntok_t parse_tok[8];
-    jsmn_init(&parser);
+    jsmntok_t parse_tok[16];
 
     switch((MQTTClient_EventCB)event)
     {
@@ -123,41 +122,27 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
 
             receivedMetaData = (MQTTClient_RecvMetaDataCB *)metaData;
 
-            //snprintf(chainData.secret, SECRET_SIZE, "test");
-            //receiveData.messageType = TIMER1000_MESSAGE;
-
             if (strncmp(receivedMetaData->topic, "chain1", receivedMetaData->topLen) == 0) {
-                int ret = jsmn_parse(&parser, data, strlen(data), parse_tok,
+                jsmn_init(&parser);
+                int ret = jsmn_parse(&parser, data, dataLen, parse_tok,
                                      sizeof(parse_tok) / sizeof(parse_tok[0]));
 
-                UART_PRINT(data);
-                UART_PRINT("\n");
                 int i;
                 for (i = 1; i < ret; ++i) {
-                    if (jsoneq(data, &parse_tok[i], "secret") == 0) {
-
+                    if (strncmp(data + parse_tok[i].start, "secret", parse_tok[i].end - parse_tok[i].start) == 0) {
                         memset(chainData.secret, 0, SECRET_SIZE);
-                        strncpy(chainData.secret, data + parse_tok[i + 1].start, parse_tok[i+1].end - parse_tok[i+1].start);
-                        //UART_PRINT(chainData.secret);
+                        memcpy(chainData.secret, data + parse_tok[i+1].start, parse_tok[i+1].end - parse_tok[i+1].start);
                         break;
                     }
                 }
 
                 writeQueue(chain_handle, &chainData);
+                memset(data, 0, dataLen);
             }
-            else if (strncmp(receivedMetaData->topic, "joseph_sensor", receivedMetaData->topLen) == 0)
+            else if (strncmp(receivedMetaData->topic, "connor_sensor", receivedMetaData->topLen) == 0)
             {
                 int ret = jsmn_parse(&parser, data, strlen(data), parse_tok,
                                      sizeof(parse_tok) / sizeof(parse_tok[0]));
-
-                if (ret < 0)
-                {
-                    receiveData.messageType = 3;
-                }
-                else if (ret < 1 || parse_tok[0].type != JSMN_OBJECT)
-                {
-                    receiveData.messageType = 3;
-                }
 
                 int msgFound = 0;
                 int i;
@@ -185,14 +170,6 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
                         i++;
                     }
                 }
-
-                if (msgFound != 3)
-                {
-                    receiveData.messageType = 3;
-                    LOG_INFO("bad payload happened");
-                }
-
-                UART_PRINT(data);
 
                 writeQueue(receive_handle, &receiveData);
             }
@@ -596,7 +573,7 @@ MQTTClient_Handle MQTT_IF_Connect(MQTT_IF_ClientParams_t mqttClientParams, MQTTC
 
     ret = MQTTClient_connect(mMQTTContext.mqttClient);
     if(ret < 0){
-        //LOG_ERROR("connect failed: %d\r\n", ret);
+        LOG_ERROR("connect failed: %d\r\n", ret);
     }
     else{
         mMQTTContext.moduleState = MQTT_STATE_CONNECTED;

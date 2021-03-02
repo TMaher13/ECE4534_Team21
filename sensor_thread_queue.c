@@ -37,7 +37,7 @@ BaseType_t writeSensorQueue(QueueHandle_t handle, struct sensorQueueStruct *data
     return xQueueSend(handle, data, 100);
 }
 
-BaseType_t readQueue(QueueHandle_t handle, void * const data) {
+BaseType_t readQueue(QueueHandle_t handle, const void * data) {
 
     return xQueueReceive(handle, data, 100);
 }

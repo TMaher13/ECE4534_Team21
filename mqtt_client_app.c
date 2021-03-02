@@ -157,7 +157,7 @@ MQTT_IF_ClientParams_t mqttClientParams =
      MQTT_CLIENT_CLEAN_CONNECT, // clean connect flag
      MQTT_CLIENT_MQTT_V3_1,     // true = 3.1, false = 3.1.1
      MQTT_CLIENT_BLOCKING_SEND, // blocking send flag
-     &mqttWillParams            // will parameters
+     NULL                       // will parameters: &mqttWillParams
 };
 
 #ifndef MQTT_SECURE_CLIENT
@@ -371,7 +371,7 @@ void MQTT_EventCallback(int32_t event){
  * User must copy the topic or payload data if it needs to be saved.
  */
 void BrokerCB(char* topic, char* payload){
-    LOG_INFO("TOPIC: %s \tPAYLOAD: %s\r\n", topic, payload);
+    //LOG_INFO("TOPIC: %s \tPAYLOAD: %s\r\n", topic, payload);
 }
 
 int32_t DisplayAppBanner(char* appName, char* appVersion){
@@ -566,7 +566,7 @@ void *mqttThread(void * args){
      */
 
     ret = MQTT_IF_Subscribe(mqttClientHandle, "chain1", MQTT_QOS_0, BrokerCB);
-    ret |= MQTT_IF_Subscribe(mqttClientHandle, "kevin_sensor", MQTT_QOS_0, BrokerCB);
+    ret |= MQTT_IF_Subscribe(mqttClientHandle, "connor_sensor", MQTT_QOS_0, BrokerCB);
 
     if(ret < 0){
         while(1);
@@ -596,8 +596,9 @@ void *mqttThread(void * args){
             MQTT_IF_Publish(mqttClientHandle,
                             publishData.topic,
                             publishData.payload,
-                            strlen(publishData.payload),
+                            PAYLOAD_SIZE,
                             MQTT_QOS_0);
+            memset(publishData.payload, 0, SECRET_SIZE);
         }
     }
 }
