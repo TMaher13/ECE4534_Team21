@@ -122,7 +122,7 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
 
             receivedMetaData = (MQTTClient_RecvMetaDataCB *)metaData;
 
-            if (strncmp(receivedMetaData->topic, "chain1", receivedMetaData->topLen) == 0) {
+            if (strncmp(receivedMetaData->topic, "chain2", receivedMetaData->topLen) == 0) {
                 jsmn_init(&parser);
                 int ret = jsmn_parse(&parser, data, dataLen, parse_tok,
                                      sizeof(parse_tok) / sizeof(parse_tok[0]));
@@ -139,7 +139,7 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
                 writeQueue(chain_handle, &chainData);
                 memset(data, 0, dataLen);
             }
-            else if (strncmp(receivedMetaData->topic, "connor_sensor", receivedMetaData->topLen) == 0)
+            else if (strncmp(receivedMetaData->topic, "joseph_sensor", receivedMetaData->topLen) == 0)
             {
                 int ret = jsmn_parse(&parser, data, strlen(data), parse_tok,
                                      sizeof(parse_tok) / sizeof(parse_tok[0]));
@@ -148,21 +148,21 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
                 int i;
                 for (i = 1; i < ret; ++i)
                 {
-                    if (jsoneq(data, &parse_tok[i], "messageType") == 0)
+                    if (strncmp(data + parse_tok[i].start, "messageType", parse_tok[i].end - parse_tok[i].start) == 0)
                     {
                         receiveData.messageType = (int_least8_t) strtol(
                                 data + parse_tok[i + 1].start, (char**) NULL, 10);
                         msgFound += 1;
                         i++;
                     }
-                    else if (jsoneq(data, &parse_tok[i], "value1") == 0)
+                    else if (strncmp(data + parse_tok[i].start, "value1", parse_tok[i].end - parse_tok[i].start) == 0)
                     {
                         receiveData.value1 = (uint32_t) strtol(
                                 data + parse_tok[i + 1].start, (char**) NULL, 10);
                         msgFound += 1;
                         i++;
                     }
-                    else if (jsoneq(data, &parse_tok[i], "value2") == 0)
+                    else if (strncmp(data + parse_tok[i].start, "value2", parse_tok[i].end - parse_tok[i].start) == 0)
                     {
                         receiveData.value2 = (uint32_t) strtol(
                                 data + parse_tok[i + 1].start, (char**) NULL, 10);
@@ -175,7 +175,7 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
             }
 
             // copying received topic data locally to send over msg queue
-            topic = (char*)malloc(receivedMetaData->topLen+1);
+            /*topic = (char*)malloc(receivedMetaData->topLen+1);
             memcpy(topic, receivedMetaData->topic, receivedMetaData->topLen);
             topic[receivedMetaData->topLen] = 0;
 
@@ -185,7 +185,7 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
 
             queueElement.event =   MQTT_EVENT_RECV;
             queueElement.topic =   topic;
-            queueElement.payload = payload;
+            queueElement.payload = payload;*/
 
             break;
         }
