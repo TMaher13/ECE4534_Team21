@@ -81,27 +81,26 @@ void timer5000Callback( TimerHandle_t xTimer )
 void *task2Thread(void *arg0) {
 
     //dbgEvent(ENTER_SENSOR_TASK);
+    uint32_t lastReceiveTick;
 
     static struct chainQueueStruct chainData;
 
-    TimerHandle_t timer5000 = xTimerCreate
-            ( /* Just a text name, not used by the RTOS
-              kernel. */
+    /*TimerHandle_t timer5000 = xTimerCreate
+            ( // Just a text name, not used by the RTOS
+              kernel.
               "Timer5000",
-              /* The timer period in ticks, must be
-              greater than 0. */
+              // The timer period in ticks, must be
+              greater than 0.
               pdMS_TO_TICKS( TIMER5000_PERIOD ),
-              /* The timers will auto-reload themselves
-              when they expire. */
-              pdFALSE,
-              /* The ID is used to store a count of the
-              number of times the timer has expired, which
-              is initialised to 0. */
+              // The timers will auto-reload themselves when they expire. pdFALSE,
+              // The ID is used to store a count of the
+              //number of times the timer has expired, which
+              //is initialised to 0.
               ( void * ) 0,
-              /* Each timer calls the same callback when
-              it expires. */
+              // Each timer calls the same callback when
+              //it expires.
               timer5000Callback
-            );
+            );*/
 
     BaseType_t readRet;
     BaseType_t publishQueueRet;
@@ -109,42 +108,46 @@ void *task2Thread(void *arg0) {
     //create payload (JSON String)
     static struct publishQueueStruct publish;
 
-    xTimerStart(timer5000,0);
+    //xTimerStart(timer5000,0);
 
     //dbgEvent(BEFORE_SENSOR_LOOP);
 
+#if USER_ID == 0
+    snprintf(publish.topic, TOPIC_SIZE, "chain0");
+#elif USER_ID == 1
+    snprintf(publish.topic, TOPIC_SIZE, "chain1");
+#elif USER_ID == 2
+    snprintf(publish.topic, TOPIC_SIZE, "chain2");
+#elif USER_ID == 3
+    snprintf(publish.topic, TOPIC_SIZE, "chain3");
+#endif
+
     for(;;) {
-
-       // dbgEvent(BEFORE_READ_SENSOR_QUEUE);
-
         readRet = readQueue(chain_handle, &chainData);
 
-        //dbgEvent(AFTER_READ_SENSOR_QUEUE);
-
-        uint32_t ulCount = ( uint32_t ) pvTimerGetTimerID( timer5000 );
+        //uint32_t ulCount = ( uint32_t ) pvTimerGetTimerID( timer5000 );
 
         if(readRet == pdTRUE) {
-
+            lastReceiveTick = xTaskGetTickCount();
             task2Computation(chainData.secret);
 
-        #if USER_ID == 0
-            snprintf(publish.topic, TOPIC_SIZE, "chain0");
-        #elif USER_ID == 1
-            snprintf(publish.topic, TOPIC_SIZE, "chain1");
-        #elif USER_ID == 2
-            snprintf(publish.topic, TOPIC_SIZE, "chain2");
-        #elif USER_ID == 3
-            snprintf(publish.topic, TOPIC_SIZE, "chain3");
-        #endif
             //set payload
             memset(publish.payload, 0, SECRET_SIZE);
             snprintf(publish.payload, SECRET_SIZE, "{\"secret\":\"%s\"}", chainData.secret); // chainData.secret
 
             publishQueueRet = writeQueue(publish_handle, &publish);
 
-            xTimerReset(timer5000,0);
+            //xTimerReset(timer5000,0);
         }
-        else if ((readRet == pdFALSE) && (ulCount == 5)){
+        else {
+            if( (xTaskGetTickCount() - lastReceiveTick) > (11+USER_ID*2)*100) {
+                memset(publish.payload, 0, SECRET_SIZE);
+                snprintf(publish.payload, SECRET_SIZE, "{\"secret\":\"abcdefghijklmnopqrstuvqxyz\"}"); // chainData.secret
+
+                publishQueueRet = writeQueue(publish_handle, &publish);
+            }
+        }
+        /*else if ((readRet == pdFALSE) && (ulCount == 5)){
             snprintf(publish.topic, TOPIC_SIZE, "chain1");
             memset(publish.payload, 0, SECRET_SIZE);
             snprintf(publish.payload, SECRET_SIZE, "{\"secret\":\"%s\"}", chainData.secret); // chainData.secret
@@ -155,7 +158,7 @@ void *task2Thread(void *arg0) {
 
         if(ulCount == 5){
             vTimerSetTimerID(timer5000,( void * ) 0);
-        }
+        }*/
 
 
     }
