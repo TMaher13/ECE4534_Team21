@@ -13,18 +13,28 @@
 #include <pthread.h>
 #include <mqueue.h>
 
+/* RTOS header files */
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+
+#include <ti/drivers/UART.h>
+#include "ti_drivers_config.h"
+
 #include "uart_term.h"
 
+#include "queue_structs.h"
 #include "debug_if.h"
 #include "jsmn.h"
 
-#include "sensor_thread_queue.h"
+extern BaseType_t writeQueueCallback(QueueHandle_t handle, const void *m);
 
-//extern BaseType_t writeChainQueueCallback(const void *m);
-extern BaseType_t writeQueue(QueueHandle_t handle, const void *data);
+extern UART_Handle requestLidarHealth(void);
+extern int requestLidarScan(UART_Handle uartHandle);
+extern int requestLidarStop(UART_Handle uartHandle);
 
-extern QueueHandle_t receive_handle;
-extern QueueHandle_t chain_handle;
+extern QueueHandle_t lidar_handle;
+extern QueueHandle_t mqtt_handle;
 
 
 enum{
@@ -63,18 +73,20 @@ static struct mqttContext
     uint8_t clientDisconnectFlag;
 } mMQTTContext = {NULL, NULL, NULL, NULL, NULL, MQTT_STATE_IDLE, 0};
 
+
 // Callback invoked by the internal MQTT library to notify the application of MQTT events
 void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, void *data, uint32_t dataLen)
 {
     int status;
     struct msgQueue queueElement;
+    static struct lidarQueueStruct lidarRequest;
+    BaseType_t writeRet;
 
-    static struct chainQueueStruct chainData;
-    static struct receiveQueueStruct receiveData;
-
-    jsmn_parser parser;
-    jsmntok_t parse_tok[8];
+    static jsmn_parser parser;
+    static jsmntok_t parse_tok[8];
     jsmn_init(&parser);
+
+
 
     switch((MQTTClient_EventCB)event)
     {
@@ -118,98 +130,81 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
             //LOG_TRACE("MQTT CLIENT CB: RECV CB\r\n");
 
             MQTTClient_RecvMetaDataCB *receivedMetaData;
-            char *topic;
-            char *payload;
+            //char *topic;
+            //char *payload;
 
             receivedMetaData = (MQTTClient_RecvMetaDataCB *)metaData;
 
-            //snprintf(chainData.secret, SECRET_SIZE, "test");
-            //receiveData.messageType = TIMER1000_MESSAGE;
-
-            if (strncmp(receivedMetaData->topic, "chain1", receivedMetaData->topLen) == 0) {
-                int ret = jsmn_parse(&parser, data, strlen(data), parse_tok,
+            /*
+             * Callback to send MQTT messages to the queue for
+             * the MQTT task parser to read from
+             *
+             *
+             *
+             */
+            if(strncmp(receivedMetaData->topic, "rover_message", receivedMetaData->topLen) == 0) {
+                int ret = jsmn_parse(&parser, data, strlen(data),
+                                     parse_tok,
                                      sizeof(parse_tok) / sizeof(parse_tok[0]));
 
-                UART_PRINT(data);
-                UART_PRINT("\n");
+                //int msgFound = 0;
                 int i;
                 for (i = 1; i < ret; ++i) {
-                    if (jsoneq(data, &parse_tok[i], "secret") == 0) {
-
-                        memset(chainData.secret, 0, SECRET_SIZE);
-                        strncpy(chainData.secret, data + parse_tok[i + 1].start, parse_tok[i+1].end - parse_tok[i+1].start);
-                        //UART_PRINT(chainData.secret);
-                        break;
+                    if (strncmp(data + parse_tok[i].start, "messageType", parse_tok[i].end - parse_tok[i].start) == 0)
+                    {
+                        /*
+                        receiveData.messageType = (int_least8_t) strtol(data + parse_tok[i + 1].start,
+                                                                        (char**) NULL,
+                                                                        10);
+                        msgFound += 1;
+                        i++;
+                        */
                     }
-                }
-
-                writeQueue(chain_handle, &chainData);
+                    else if (strncmp(data + parse_tok[i].start, "value1", parse_tok[i].end - parse_tok[i].start) == 0)
+                    {
+                        /*
+                        receiveData.value1 = (uint32_t) strtol(data + parse_tok[i + 1].start,
+                                                               (char**) NULL,
+                                                               10);
+                        msgFound += 1;
+                        i++;
+                        */
+                    }
+                    else if (strncmp(data + parse_tok[i].start, "value2", parse_tok[i].end - parse_tok[i].start) == 0)
+                    {
+                        /*
+                        receiveData.value2 = (uint32_t) strtol(data + parse_tok[i + 1].start,
+                                                               (char**) NULL,
+                                                               10);
+                        msgFound += 1;
+                        i++;
+                        */
+                     }
+                 }
             }
-            else if (strncmp(receivedMetaData->topic, "joseph_sensor", receivedMetaData->topLen) == 0)
-            {
-                int ret = jsmn_parse(&parser, data, strlen(data), parse_tok,
-                                     sizeof(parse_tok) / sizeof(parse_tok[0]));
+            else if(strncmp(receivedMetaData->topic, "arm_message", receivedMetaData->topLen) == 0) {
 
-                if (ret < 0)
-                {
-                    receiveData.messageType = 3;
-                }
-                else if (ret < 1 || parse_tok[0].type != JSMN_OBJECT)
-                {
-                    receiveData.messageType = 3;
-                }
-
-                int msgFound = 0;
-                int i;
-                for (i = 1; i < ret; ++i)
-                {
-                    if (jsoneq(data, &parse_tok[i], "messageType") == 0)
-                    {
-                        receiveData.messageType = (int_least8_t) strtol(
-                                data + parse_tok[i + 1].start, (char**) NULL, 10);
-                        msgFound += 1;
-                        i++;
-                    }
-                    else if (jsoneq(data, &parse_tok[i], "value1") == 0)
-                    {
-                        receiveData.value1 = (uint32_t) strtol(
-                                data + parse_tok[i + 1].start, (char**) NULL, 10);
-                        msgFound += 1;
-                        i++;
-                    }
-                    else if (jsoneq(data, &parse_tok[i], "value2") == 0)
-                    {
-                        receiveData.value2 = (uint32_t) strtol(
-                                data + parse_tok[i + 1].start, (char**) NULL, 10);
-                        msgFound += 1;
-                        i++;
-                    }
-                }
-
-                if (msgFound != 3)
-                {
-                    receiveData.messageType = 3;
-                    LOG_INFO("bad payload happened");
-                }
-
-                UART_PRINT(data);
-
-                writeQueue(receive_handle, &receiveData);
             }
+            else if(strncmp(receivedMetaData->topic, "lidar_health", receivedMetaData->topLen) == 0) {
+                UART_PRINT("Requesting health info from LIDAR\r\n");
+                lidarRequest.messageType = MQTT_MESSAGE;
+                lidarRequest.value = HEALTH_REQUEST;
 
-            // copying received topic data locally to send over msg queue
-            topic = (char*)malloc(receivedMetaData->topLen+1);
-            memcpy(topic, receivedMetaData->topic, receivedMetaData->topLen);
-            topic[receivedMetaData->topLen] = 0;
+                writeRet = writeQueueCallback(lidar_handle, &lidarRequest);
+                if(writeRet == errQUEUE_FULL)
+                    UART_PRINT("Lidar queue full\r\n");
+            }
+            else if(strncmp(receivedMetaData->topic, "lidar_info", receivedMetaData->topLen) == 0) {
+                UART_PRINT("Requesting ID info from LIDAR\r\n");
+                lidarRequest.messageType = MQTT_MESSAGE;
+                lidarRequest.value = INFO_REQUEST;
 
-            payload = (char*)malloc(dataLen+1);
-            memcpy(payload, data, dataLen);
-            payload[dataLen] = 0;
+                writeRet = writeQueueCallback(lidar_handle, &lidarRequest);
+                if(writeRet == errQUEUE_FULL)
+                    UART_PRINT("Lidar queue full\r\n");
+            }
 
             queueElement.event =   MQTT_EVENT_RECV;
-            queueElement.topic =   topic;
-            queueElement.payload = payload;
-
             break;
         }
         case MQTTClient_DISCONNECT_CB_EVENT:

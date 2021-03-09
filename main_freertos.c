@@ -45,6 +45,8 @@
 
 /* TI-RTOS Header files */
 #include <ti/drivers/GPIO.h>
+#include <ti/drivers/UART.h>
+#include <ti/drivers/I2C.h>
 
 /* TI-DRIVERS Header files */
 #include "ti_drivers_config.h"
@@ -54,7 +56,7 @@
 extern void * mqttThread(void *arg0);
 
 /* Stack size in bytes */
-#define THREADSTACKSIZE   4096
+#define THREADSTACKSIZE   2048
 
 extern void timer500Init();
 extern void timer70Init();
@@ -64,117 +66,67 @@ extern void debugInit();
 extern QueueHandle_t createSensorQueue(unsigned int queueLen, unsigned int itemSize);
 extern QueueHandle_t createQueue(unsigned int queueLen, unsigned int itemSize);
 
-extern int createSensorThread(int threadStackSize, int prio);
-extern int createTask2Thread(int threadStackSize, int prio);
-extern int createReceiveThread(int threadStackSize, int prio);
+extern int createLidarThread(int threadStackSize, int prio);
+extern int createCameraThread(int threadStackSize, int prio);
+extern int createNavigationThread(int threadStackSize, int prio);
+extern int createMQTTThread(int threadStackSize, int prio);
 
-//Version 1
-QueueHandle_t sensor_handle;
 
-//Version2
-QueueHandle_t receive_handle;
+// Task queue handles
+QueueHandle_t lidar_handle;
+//QueueHandle_t camera_handle;
+QueueHandle_t nav_handle;
 
-//Task2
-QueueHandle_t chain_handle;
-
-//Publish Queue
-QueueHandle_t publish_handle;
+// MQTT task handle
+QueueHandle_t mqtt_handle;
 
 /*
  *  ======== main ========
  */
-int main(void)
-{
-    pthread_t thread;
-    pthread_attr_t pAttrs;
-    struct sched_param priParam;
-    int retc;
-    int detachState;
+int main(void) {
 
     /* Call board init functions */
     Board_init();
     debugInit();
+
+    // Initialize I2C for interfacing with OpenMV H7 camera
+    I2C_init();
+
+    // Initialize UART and GPIO for interfacing with RPLidar A1 sensor
+    UART_init();
     GPIO_init();
+    //GPIO_setConfig(CONFIG_GPIO_MOTOCTL_8, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_OFF);
 
-    //Version1
-    //sensor_handle = createSensorQueue(5, sizeof(struct sensorQueueStruct));
-
-    //if(sensor_handle == NULL)
-    //    return (1);
-
-    //Version2
-    receive_handle = createQueue(5, sizeof(struct receiveQueueStruct));
-
-    if (receive_handle == NULL)
-        return(1);
-
-    //Task2
-    chain_handle = createQueue(5, sizeof(struct chainQueueStruct));
-
-    if(chain_handle == NULL)
-        return(1);
-
-    publish_handle = createQueue(5, sizeof(struct publishQueueStruct));
-
-    if(publish_handle == NULL)
-        return(1);
-
-    //version1
-    //timer70Init();
-    //timer500Init();
-
-    //version2
-    timer1000Init();
-
-    //version1
-    //createSensorThread(THREADSTACKSIZE, 1);
-
-    //version2
-    createReceiveThread(THREADSTACKSIZE, 1);
-
-    //task2
-    createTask2Thread(THREADSTACKSIZE, 1);
-
-
-    //overall mqtt thread for all TI's
-    /* Set priority and stack size attributes */
-    pthread_attr_init(&pAttrs);
-    priParam.sched_priority = 1;
-
-    detachState = PTHREAD_CREATE_DETACHED;
-    retc = pthread_attr_setdetachstate(&pAttrs, detachState);
-    if(retc != 0)
-    {
-        /* pthread_attr_setdetachstate() failed */
-        while(1)
-        {
-            ;
-        }
+    // Queue for sending navigation data to the nvagigation task
+    lidar_handle = createQueue(5, sizeof(struct lidarQueueStruct));
+    if (lidar_handle == NULL) {
+        GPIO_toggle(CONFIG_GPIO_LED_0);
+        return 1;
     }
 
-    pthread_attr_setschedparam(&pAttrs, &priParam);
-
-    retc |= pthread_attr_setstacksize(&pAttrs, THREADSTACKSIZE);
-    if(retc != 0)
-    {
-        /* pthread_attr_setstacksize() failed */
-        while(1)
-        {
-            ;
-        }
+    // Queue for sending navigation data to the nvagigation task
+    nav_handle = createQueue(5, sizeof(struct navQueueStruct));
+    if (nav_handle == NULL) {
+        GPIO_toggle(CONFIG_GPIO_LED_0);
+        return 1;
     }
 
-    retc = pthread_create(&thread, &pAttrs, mqttThread, NULL);
-    if(retc != 0)
-    {
-        /* pthread_create() failed */
-        while(1)
-        {
-            ;
-        }
+    // Queue for publishing messages to MQTT
+    mqtt_handle = createQueue(5, sizeof(struct mqttQueueStruct));
+    if(mqtt_handle == NULL) {
+        GPIO_toggle(CONFIG_GPIO_LED_0);
+        return 1;
     }
 
+    createMQTTThread(THREADSTACKSIZE, 1);
 
+    createLidarThread(THREADSTACKSIZE, 1);
+
+    //createCameraThread(THREADSTACKSIZE, 1);
+
+    //createNavigationThread(THREADSTACKSIZE, 1);
 
     /* Start the FreeRTOS scheduler */
     vTaskStartScheduler();

@@ -4,47 +4,62 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-extern const uint_least8_t          TIMER70_MESSAGE_CONST;
-#define TIMER70_MESSAGE             0
 
-extern const uint_least8_t          TIMER500_MESSAGE_CONST;
-#define TIMER500_MESSAGE            1
-
-extern const uint_least8_t          TIMER1000_MESSAGE_CONST;
-#define TIMER1000_MESSAGE           2
-
-extern const uint_least8_t          TOPIC_SIZE_CONST;
 #define TOPIC_SIZE                  64
-
-extern const uint_least8_t          PAYLOAD_SIZE_CONST;
 #define PAYLOAD_SIZE                256
 
-extern const uint_least8_t          SECRET_SIZE_CONST;
-#define SECRET_SIZE                 256
+#define CAMERA_PACKET_SIZE          64
+#define IMAGE_SIZE                  128
 
-struct sensorQueueStruct {
+#define I2C_SLAVE_ADDRESS           0x12
+
+/*  Lidar codes and values  */
+#define LIDAR_REQUEST_SIZE          2
+#define LIDAR_RD_SIZE               2
+#define LIDAR_HEALTH_SIZE           3
+#define LIDAR_PACKET_SIZE           5
+#define LIDAR_INFO_SIZE             20
+
+#define LIDAR_HEALTH_CODE           0xA552
+#define LIDAR_INFO_CODE             0xA550
+#define LIDAR_SCAN_CODE             0xA520
+#define LIDAR_STOP_CODE             0xA525
+
+#define MQTT_MESSAGE                1
+
+#define HEALTH_REQUEST              0
+#define INFO_REQUEST                1
+#define SCAN_REQUEST                2
+#define STOP_REQUEST                3
+
+
+
+struct lidarQueueStruct {
 
     uint_least8_t messageType;
-    uint32_t value;
+    uint_least8_t value;
 
 };
 
-struct receiveQueueStruct {
+struct cameraQueueStruct {
 
-    uint_least8_t messageType;
-    uint32_t value1;
-    uint32_t value2;
+    //char img[IMAGE_SIZE*IMAGE_SIZE];
 };
 
-struct publishQueueStruct {
+struct navQueueStruct {
+
+    uint_least8_t   messageType;
+    uint32_t        tickTime;
+
+    //char img[IMAGE_SIZE*IMAGE_SIZE];
+};
+
+
+struct mqttQueueStruct {
 
     char topic[TOPIC_SIZE];
     char payload[PAYLOAD_SIZE];
 
-};
-
-struct chainQueueStruct {
-    char secret[SECRET_SIZE];
 };
 
 

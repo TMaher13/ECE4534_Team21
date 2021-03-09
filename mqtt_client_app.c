@@ -114,7 +114,7 @@ int longPress = 0;
 
 extern void debugInit();
 extern BaseType_t readQueue(QueueHandle_t handle, void * const data);
-extern QueueHandle_t publish_handle;
+extern QueueHandle_t mqtt_handle;
 
 /* Client ID                                                                 */
 /* If ClientId isn't set, the MAC address of the device will be copied into  */
@@ -320,26 +320,26 @@ void MQTT_EventCallback(int32_t event){
 
         case MQTT_EVENT_SUBACK:
         {
-            //LOG_INFO("MQTT_EVENT_SUBACK\r\n");
+            LOG_INFO("MQTT_EVENT_SUBACK\r\n");
             break;
         }
 
         case MQTT_EVENT_PUBACK:
         {
-            //LOG_INFO("MQTT_EVENT_PUBACK\r\n");
+            LOG_INFO("MQTT_EVENT_PUBACK\r\n");
             break;
         }
 
         case MQTT_EVENT_UNSUBACK:
         {
-            //LOG_INFO("MQTT_EVENT_UNSUBACK\r\n");
+            LOG_INFO("MQTT_EVENT_UNSUBACK\r\n");
             break;
         }
 
         case MQTT_EVENT_CLIENT_DISCONNECT:
         {
             connected = 0;
-            //LOG_INFO("MQTT_EVENT_CLIENT_DISCONNECT\r\n");
+            LOG_INFO("MQTT_EVENT_CLIENT_DISCONNECT\r\n");
             break;
         }
 
@@ -347,19 +347,19 @@ void MQTT_EventCallback(int32_t event){
         {
             connected = 0;
 
-            //LOG_INFO("MQTT_EVENT_SERVER_DISCONNECT\r\n");
+            LOG_INFO("MQTT_EVENT_SERVER_DISCONNECT\r\n");
 
             queueElement.event = APP_MQTT_CON_TOGGLE;
             int res = mq_send(appQueue, (const char*)&queueElement, sizeof(struct msgQueue), 0);
             if(res < 0){
-                //LOG_ERROR("msg queue send error %d", res);
+                LOG_ERROR("msg queue send error %d", res);
             }
             break;
         }
 
         case MQTT_EVENT_DESTROY:
         {
-            //LOG_INFO("MQTT_EVENT_DESTROY\r\n");
+            LOG_INFO("MQTT_EVENT_DESTROY\r\n");
             break;
         }
     }
@@ -372,6 +372,8 @@ void MQTT_EventCallback(int32_t event){
  */
 void BrokerCB(char* topic, char* payload){
     LOG_INFO("TOPIC: %s \tPAYLOAD: %s\r\n", topic, payload);
+
+    // For now do nothing, maybe add something later
 }
 
 int32_t DisplayAppBanner(char* appName, char* appVersion){
@@ -428,7 +430,7 @@ int WifiInit(){
     ret |= pthread_attr_setdetachstate(&pattrs_spawn, PTHREAD_CREATE_DETACHED);
     ret = pthread_create(&spawn_thread, &pattrs_spawn, sl_Task, NULL);
     if(ret != 0){
-        //LOG_ERROR("could not create simplelink task\n\r");
+        LOG_ERROR("could not create simplelink task\n\r");
         while(1);
     }
 
@@ -438,7 +440,7 @@ int WifiInit(){
 
     ret = Network_IF_InitDriver(ROLE_STA);
     if(ret < 0){
-        //LOG_ERROR("Failed to start SimpleLink Device\n\r");
+        LOG_ERROR("Failed to start SimpleLink Device\n\r");
         while(1);
     }
 
@@ -446,7 +448,7 @@ int WifiInit(){
 
     SetClientIdNamefromMacAddress();
 
-    GPIO_toggle(CONFIG_GPIO_LED_2);
+    //GPIO_toggle(CONFIG_GPIO_LED_2);
 
     security_params.Key = (signed char*)SECURITY_KEY;
     security_params.KeyLen = strlen(SECURITY_KEY);
@@ -454,12 +456,12 @@ int WifiInit(){
 
     ret = Timer_start(timer0);
     if(ret < 0){
-        //LOG_ERROR("failed to start the timer\r\n");
+        LOG_ERROR("failed to start the timer\r\n");
     }
 
     ret = Network_IF_ConnectAP(SSID_NAME, security_params);
     if(ret < 0){
-        //LOG_ERROR("Connection to an AP failed\n\r");
+        LOG_ERROR("Connection to an AP failed\n\r");
     }
     else{
 
@@ -471,10 +473,10 @@ int WifiInit(){
 
         ret = sl_WlanProfileAdd((signed char*)SSID_NAME, strlen(SSID_NAME), 0, &securityParams, NULL, 7, 0);
         if(ret < 0){
-            //LOG_ERROR("failed to add profile %s\r\n", SSID_NAME);
+            LOG_ERROR("failed to add profile %s\r\n", SSID_NAME);
         }
         else{
-            //LOG_INFO("profile added %s\r\n", SSID_NAME);
+            LOG_INFO("profile added %s\r\n", SSID_NAME);
         }
     }
 
@@ -494,7 +496,7 @@ void *mqttThread(void * args){
     struct msgQueue queueElement;
     MQTTClient_Handle mqttClientHandle;
 
-    struct publishQueueStruct publishData;
+    struct mqttQueueStruct mqttData;
 
     uartHandle = InitTerm();
     UART_control(uartHandle, UART_CMD_RXDISABLE, NULL);
@@ -506,7 +508,7 @@ void *mqttThread(void * args){
     ret = ti_net_SlNet_initConfig();
     if(0 != ret)
     {
-        //LOG_ERROR("Failed to initialize SlNetSock\n\r");
+        LOG_ERROR("Failed to initialize SlNetSock\n\r");
     }
 
     // configuring the timer to toggle an LED until the AP is connected
@@ -518,7 +520,7 @@ void *mqttThread(void * args){
 
     timer0 = Timer_open(CONFIG_TIMER_0, &params);
     if (timer0 == NULL) {
-        //LOG_ERROR("failed to initialize timer\r\n");
+        LOG_ERROR("failed to initialize timer\r\n");
         while(1);
     }
 
@@ -543,7 +545,7 @@ void *mqttThread(void * args){
 
     timer0 = Timer_open(CONFIG_TIMER_0, &params);
     if (timer0 == NULL) {
-        //LOG_ERROR("failed to initialize timer\r\n");
+        LOG_ERROR("failed to initialize timer\r\n");
         while(1);
     }
 
@@ -565,8 +567,9 @@ void *mqttThread(void * args){
      * of the topic callbacks. The user may still call subscribe after connect but have to be aware of this.
      */
 
-    ret = MQTT_IF_Subscribe(mqttClientHandle, "chain1", MQTT_QOS_0, BrokerCB);
-    ret |= MQTT_IF_Subscribe(mqttClientHandle, "kevin_sensor", MQTT_QOS_0, BrokerCB);
+    // Add whatever topics Nav needs to subscribe to here
+    ret = MQTT_IF_Subscribe(mqttClientHandle, "lidar_health", MQTT_QOS_0, BrokerCB);
+    ret |= MQTT_IF_Subscribe(mqttClientHandle, "lidar_info", MQTT_QOS_0, BrokerCB);
 
     if(ret < 0){
         while(1);
@@ -587,36 +590,65 @@ void *mqttThread(void * args){
 
     dbgEvent(BEFORE_MQTT_LOOP);
     while(1){
-
-        readRet = readQueue(publish_handle, &publishData);
+        readRet = readQueue(mqtt_handle, &mqttData);
 
         if(readRet == pdTRUE) {
 
             //LOG_INFO("Publishing message");
             MQTT_IF_Publish(mqttClientHandle,
-                            publishData.topic,
-                            publishData.payload,
-                            strlen(publishData.payload),
+                            mqttData.topic,
+                            mqttData.payload,
+                            strlen(mqttData.payload),
                             MQTT_QOS_0);
         }
     }
 }
 
-/*
- *             publishAttempts++;
-            sprintf(publishAttemptsStr, "{\"publishAttemptsStr\":\"%d\"}", publishAttempts);
-            MQTT_IF_Publish(mqttClientHandle,
-                            publishData.topic,
-                            publishData.payload,
-                            strlen(publishData.payload),
-                            MQTT_QOS_0);
-            //Version1
-            MQTT_IF_Publish(mqttClientHandle,
-                            "connor_stats",
-                            publishAttemptsStr,
-                            strlen(publishAttemptsStr),
-                            MQTT_QOS_0);
- */
+
+int createMQTTThread(int threadStackSize, int prio) {
+
+    pthread_t thread;
+    pthread_attr_t pAttrs;
+    struct sched_param priParam;
+    int retc;
+    int detachState;
+
+    //overall mqtt thread for all TI's
+    /* Set priority and stack size attributes */
+    pthread_attr_init(&pAttrs);
+    priParam.sched_priority = prio;
+
+    detachState = PTHREAD_CREATE_DETACHED;
+    retc = pthread_attr_setdetachstate(&pAttrs, detachState);
+    if(retc != 0) {
+        /* pthread_attr_setdetachstate() failed */
+        while(1) {
+                ;
+            }
+    }
+
+    pthread_attr_setschedparam(&pAttrs, &priParam);
+
+    retc |= pthread_attr_setstacksize(&pAttrs, threadStackSize);
+    if(retc != 0) {
+        /* pthread_attr_setstacksize() failed */
+        while(1)
+        {
+            ;
+        }
+    }
+
+    retc = pthread_create(&thread, &pAttrs, mqttThread, NULL);
+    if(retc != 0) {
+        /* pthread_create() failed */
+        while(1)
+        {
+            ;
+        }
+    }
+
+    return 0;
+}
 
 //*****************************************************************************
 //
