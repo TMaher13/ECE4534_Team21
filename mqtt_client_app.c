@@ -98,7 +98,7 @@ extern int32_t ti_net_SlNet_initConfig();
 
 #ifndef MQTT_SECURE_CLIENT
 #define MQTT_CONNECTION_FLAGS           MQTTCLIENT_NETCONN_IP4
-#define MQTT_CONNECTION_ADDRESS         "10.0.0.136"
+#define MQTT_CONNECTION_ADDRESS         "73.99.194.128"
 #define MQTT_CONNECTION_PORT_NUMBER     1883
 #else
 #define MQTT_CONNECTION_FLAGS           MQTTCLIENT_NETCONN_IP4 | MQTTCLIENT_NETCONN_SEC
@@ -565,8 +565,8 @@ void *mqttThread(void * args){
      * of the topic callbacks. The user may still call subscribe after connect but have to be aware of this.
      */
 
-    ret = MQTT_IF_Subscribe(mqttClientHandle, "chain1", MQTT_QOS_0, BrokerCB);
-    ret |= MQTT_IF_Subscribe(mqttClientHandle, "connor_sensor", MQTT_QOS_0, BrokerCB);
+    ret = MQTT_IF_Subscribe(mqttClientHandle, "chain2", MQTT_QOS_0, BrokerCB);
+    ret |= MQTT_IF_Subscribe(mqttClientHandle, "joseph_sensor", MQTT_QOS_0, BrokerCB);
 
     if(ret < 0){
         while(1);

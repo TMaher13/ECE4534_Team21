@@ -32,6 +32,7 @@ struct sensorQueueStruct {
 struct receiveQueueStruct {
 
     uint_least8_t messageType;
+    uint32_t messageID;
     uint32_t value1;
     uint32_t value2;
 };

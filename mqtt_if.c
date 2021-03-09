@@ -155,6 +155,13 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
                         msgFound += 1;
                         i++;
                     }
+                    else if (strncmp(data + parse_tok[i].start, "messageID", parse_tok[i].end - parse_tok[i].start) == 0)
+                    {
+                        receiveData.messageType = (int_least8_t) strtol(
+                                data + parse_tok[i + 1].start, (char**) NULL, 10);
+                        msgFound += 1;
+                        i++;
+                    }
                     else if (strncmp(data + parse_tok[i].start, "value1", parse_tok[i].end - parse_tok[i].start) == 0)
                     {
                         receiveData.value1 = (uint32_t) strtol(

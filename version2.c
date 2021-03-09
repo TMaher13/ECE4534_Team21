@@ -53,6 +53,9 @@ void *receiveThread(void *arg0) {
     static int readingsAvgTotal = 0;
     static int avgCount = 0;
 
+    static int expectedMessageID = 0;
+    static int totalLostMessages = 1;
+
     BaseType_t publishQueueRet;
 
     //create payload (JSON String)
@@ -69,6 +72,26 @@ void *receiveThread(void *arg0) {
 
         if(readRet == pdTRUE) {
 
+            if (receiveData.messageID != expectedMessageID){
+                //set topic
+                snprintf(publish.topic, TOPIC_SIZE, "lostMessages");
+
+                //set payload
+                memset(jsonStr, 0, PAYLOAD_SIZE);
+                snprintf(jsonStr, PAYLOAD_SIZE, "{\"ExpectedMessageID\":\"%d\",\"ReceivedMessageID\":\"%d\",\"totalLostMessages\":\"%d\"}", expectedMessageID, receiveData.messageID, totalLostMessages);
+                memcpy(publish.payload,jsonStr, PAYLOAD_SIZE);
+
+                //send to publish queue
+                publishQueueRet = writeQueue(publish_handle, &publish);
+                if (publishQueueRet == 0){
+                //DEBUG_EVENT
+                }
+
+                totalLostMessages++;
+            }
+
+            expectedMessageID = receiveData.messageID + 1;
+
             publishReceived++;
             if (receiveData.messageType == TIMER70_MESSAGE){
                 totalMessages++;
@@ -84,7 +107,7 @@ void *receiveThread(void *arg0) {
                 int numMessages = totalReadings;
 
                 //set topic
-                snprintf(publish.topic, TOPIC_SIZE, "thomas");
+                snprintf(publish.topic, TOPIC_SIZE, "kevin");
 
                 //set payload
                 memset(jsonStr, 0, PAYLOAD_SIZE);
