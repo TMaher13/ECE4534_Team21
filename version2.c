@@ -72,13 +72,13 @@ void *receiveThread(void *arg0) {
 
         if(readRet == pdTRUE) {
 
-            if (receiveData.messageID != expectedMessageID){
+            if (receiveData.messageType != TIMER1000_MESSAGE && receiveData.messageID != expectedMessageID){
                 //set topic
                 snprintf(publish.topic, TOPIC_SIZE, "lostMessages");
 
                 //set payload
                 memset(jsonStr, 0, PAYLOAD_SIZE);
-                snprintf(jsonStr, PAYLOAD_SIZE, "{\"ExpectedMessageID\":\"%d\",\"ReceivedMessageID\":\"%d\",\"totalLostMessages\":\"%d\"}", expectedMessageID, receiveData.messageID, totalLostMessages);
+                snprintf(jsonStr, PAYLOAD_SIZE, "{\"ExpectedID\":\"%d\",\"ReceivedID\":\"%d\",\"totalLost\":\"%d\"}", expectedMessageID, receiveData.messageID, totalLostMessages);
                 memcpy(publish.payload,jsonStr, PAYLOAD_SIZE);
 
                 //send to publish queue
@@ -90,17 +90,17 @@ void *receiveThread(void *arg0) {
                 totalLostMessages++;
             }
 
-            expectedMessageID = receiveData.messageID + 1;
-
             publishReceived++;
             if (receiveData.messageType == TIMER70_MESSAGE){
                 totalMessages++;
                 totalReadings = totalReadings + receiveData.value1;
+                expectedMessageID = receiveData.messageID + 1;
             }
             else if (receiveData.messageType == TIMER500_MESSAGE){
                 totalMessages++;
                 avgCount++;
                 readingsAvgTotal = readingsAvgTotal + receiveData.value1;
+                expectedMessageID = receiveData.messageID + 1;
             }
             else if (receiveData.messageType == TIMER1000_MESSAGE){
                 int avg = readingsAvgTotal / avgCount;
@@ -111,7 +111,7 @@ void *receiveThread(void *arg0) {
 
                 //set payload
                 memset(jsonStr, 0, PAYLOAD_SIZE);
-                snprintf(jsonStr, PAYLOAD_SIZE, "{\"messageCounter\":\"%d\",\"totalMessages\":\"%d\",\"totalReadings\":\"%d\",\"avgReadings\":\"%d\"}", publishReceived, totalMessages, numMessages, avg);
+                snprintf(jsonStr, PAYLOAD_SIZE, "{\"mCounter\":\"%d\",\"totalM\":\"%d\",\"totalR\":\"%d\",\"avgR\":\"%d\"}", publishReceived, totalMessages, numMessages, avg);
                 memcpy(publish.payload,jsonStr, PAYLOAD_SIZE);
 
                 //send to publish queue

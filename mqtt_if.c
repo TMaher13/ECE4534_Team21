@@ -150,14 +150,14 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
                 {
                     if (strncmp(data + parse_tok[i].start, "messageType", parse_tok[i].end - parse_tok[i].start) == 0)
                     {
-                        receiveData.messageType = (int_least8_t) strtol(
+                        receiveData.messageType = (uint_least8_t) strtol(
                                 data + parse_tok[i + 1].start, (char**) NULL, 10);
                         msgFound += 1;
                         i++;
                     }
                     else if (strncmp(data + parse_tok[i].start, "messageID", parse_tok[i].end - parse_tok[i].start) == 0)
                     {
-                        receiveData.messageType = (int_least8_t) strtol(
+                        receiveData.messageID = (uint32_t) strtol(
                                 data + parse_tok[i + 1].start, (char**) NULL, 10);
                         msgFound += 1;
                         i++;
@@ -249,6 +249,7 @@ void *MQTTAppThread(void *threadParams)
 
         ret = 0;
 
+        /*
         if(queueElement.event == MQTT_EVENT_RECV)
         {
             //LOG_TRACE("MQTT APP THREAD: RECV TOPIC = %s", queueElement.topic);
@@ -283,8 +284,9 @@ void *MQTTAppThread(void *threadParams)
             free(queueElement.topic);
             free(queueElement.payload);
         }
+        */
         // when MQTT_IF_Deinit is called we must close the message queue and terminate the MQTTAppThread
-        else if(queueElement.event == MQTT_EVENT_DESTROY)
+        if(queueElement.event == MQTT_EVENT_DESTROY)
         {
             //LOG_TRACE("MQTT APP THREAD: DESTROY\r\n");
 
