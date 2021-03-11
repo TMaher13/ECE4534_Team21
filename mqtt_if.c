@@ -203,6 +203,26 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
                 if(writeRet == errQUEUE_FULL)
                     UART_PRINT("Lidar queue full\r\n");
             }
+            else if(strncmp(receivedMetaData->topic, "lidar_scan", receivedMetaData->topLen) == 0) {
+                UART_PRINT("Requesting scan from LIDAR\r\n");
+                lidarRequest.messageType = MQTT_MESSAGE;
+                lidarRequest.value = SCAN_REQUEST;
+
+                writeRet = writeQueueCallback(lidar_handle, &lidarRequest);
+                if(writeRet == errQUEUE_FULL) {
+                    UART_PRINT("Lidar queue full\r\n");
+                }
+            }
+            else if(strncmp(receivedMetaData->topic, "lidar_stop", receivedMetaData->topLen) == 0) {
+                UART_PRINT("Requesting stop from LIDAR\r\n");
+                lidarRequest.messageType = MQTT_MESSAGE;
+                lidarRequest.value = STOP_REQUEST;
+
+                writeRet = writeQueueCallback(lidar_handle, &lidarRequest);
+                if(writeRet == errQUEUE_FULL) {
+                    UART_PRINT("Lidar queue full\r\n");
+                }
+            }
 
             queueElement.event =   MQTT_EVENT_RECV;
             break;

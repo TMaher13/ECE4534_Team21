@@ -34,6 +34,7 @@
  *  ======== main_freertos.c ========
  */
 #include <stdint.h>
+#include <unistd.h>
 
 /* POSIX Header files */
 #include <pthread.h>
@@ -102,27 +103,37 @@ int main(void) {
     // Queue for sending navigation data to the nvagigation task
     lidar_handle = createQueue(5, sizeof(struct lidarQueueStruct));
     if (lidar_handle == NULL) {
-        GPIO_toggle(CONFIG_GPIO_LED_0);
-        return 1;
+        while(1) {
+            GPIO_toggle(CONFIG_GPIO_LED_0);
+            usleep( 100000 );
+        }
     }
 
     // Queue for sending navigation data to the nvagigation task
     nav_handle = createQueue(5, sizeof(struct navQueueStruct));
     if (nav_handle == NULL) {
-        GPIO_toggle(CONFIG_GPIO_LED_0);
-        return 1;
+        while(1) {
+            GPIO_toggle(CONFIG_GPIO_LED_0);
+            usleep( 100000 );
+        }
     }
 
     // Queue for publishing messages to MQTT
     mqtt_handle = createQueue(5, sizeof(struct mqttQueueStruct));
     if(mqtt_handle == NULL) {
-        GPIO_toggle(CONFIG_GPIO_LED_0);
-        return 1;
+        while(1) {
+            GPIO_toggle(CONFIG_GPIO_LED_0);
+            usleep( 100000 );
+        }
     }
+
+    GPIO_toggle(CONFIG_GPIO_LED_0);
 
     createMQTTThread(THREADSTACKSIZE, 1);
 
     createLidarThread(THREADSTACKSIZE, 1);
+
+    GPIO_toggle(CONFIG_GPIO_LED_0);
 
     //createCameraThread(THREADSTACKSIZE, 1);
 
@@ -148,6 +159,8 @@ void vApplicationMallocFailedHook()
     /* Handle Memory Allocation Errors */
     while(1)
     {
+        GPIO_toggle(CONFIG_GPIO_LED_0);
+        sleep(3);
     }
 }
 
@@ -166,6 +179,8 @@ void vApplicationStackOverflowHook(TaskHandle_t pxTask,
     //Handle FreeRTOS Stack Overflow
     while(1)
     {
+        GPIO_toggle(CONFIG_GPIO_LED_0);
+        sleep(1);
     }
 }
 

@@ -570,6 +570,8 @@ void *mqttThread(void * args){
     // Add whatever topics Nav needs to subscribe to here
     ret = MQTT_IF_Subscribe(mqttClientHandle, "lidar_health", MQTT_QOS_0, BrokerCB);
     ret |= MQTT_IF_Subscribe(mqttClientHandle, "lidar_info", MQTT_QOS_0, BrokerCB);
+    ret |= MQTT_IF_Subscribe(mqttClientHandle, "lidar_scan", MQTT_QOS_0, BrokerCB);
+    ret |= MQTT_IF_Subscribe(mqttClientHandle, "lidar_stop", MQTT_QOS_0, BrokerCB);
 
     if(ret < 0){
         while(1);

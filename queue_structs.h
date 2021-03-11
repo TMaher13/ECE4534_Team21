@@ -15,15 +15,10 @@
 
 /*  Lidar codes and values  */
 #define LIDAR_REQUEST_SIZE          2
-#define LIDAR_RD_SIZE               2
+#define LIDAR_RD_SIZE               7
 #define LIDAR_HEALTH_SIZE           3
-#define LIDAR_PACKET_SIZE           5
+#define LIDAR_SCAN_SIZE             5
 #define LIDAR_INFO_SIZE             20
-
-#define LIDAR_HEALTH_CODE           0xA552
-#define LIDAR_INFO_CODE             0xA550
-#define LIDAR_SCAN_CODE             0xA520
-#define LIDAR_STOP_CODE             0xA525
 
 #define MQTT_MESSAGE                1
 
@@ -35,10 +30,8 @@
 
 
 struct lidarQueueStruct {
-
     uint_least8_t messageType;
     uint_least8_t value;
-
 };
 
 struct cameraQueueStruct {
