@@ -70,7 +70,6 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
     struct msgQueue queueElement;
 
     static struct chainQueueStruct chainData;
-    static struct receiveQueueStruct receiveData;
 
     jsmn_parser parser;
     jsmntok_t parse_tok[16];
@@ -117,8 +116,6 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
             //LOG_TRACE("MQTT CLIENT CB: RECV CB\r\n");
 
             MQTTClient_RecvMetaDataCB *receivedMetaData;
-            char *topic;
-            char *payload;
 
             receivedMetaData = (MQTTClient_RecvMetaDataCB *)metaData;
 
@@ -138,47 +135,6 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
 
                 writeQueue(chain_handle, &chainData);
                 memset(data, 0, dataLen);
-            }
-            else if (strncmp(receivedMetaData->topic, "joseph_sensor", receivedMetaData->topLen) == 0)
-            {
-                int ret = jsmn_parse(&parser, data, strlen(data), parse_tok,
-                                     sizeof(parse_tok) / sizeof(parse_tok[0]));
-
-                int msgFound = 0;
-                int i;
-                for (i = 1; i < ret; ++i)
-                {
-                    if (strncmp(data + parse_tok[i].start, "messageType", parse_tok[i].end - parse_tok[i].start) == 0)
-                    {
-                        receiveData.messageType = (uint_least8_t) strtol(
-                                data + parse_tok[i + 1].start, (char**) NULL, 10);
-                        msgFound += 1;
-                        i++;
-                    }
-                    else if (strncmp(data + parse_tok[i].start, "messageID", parse_tok[i].end - parse_tok[i].start) == 0)
-                    {
-                        receiveData.messageID = (uint32_t) strtol(
-                                data + parse_tok[i + 1].start, (char**) NULL, 10);
-                        msgFound += 1;
-                        i++;
-                    }
-                    else if (strncmp(data + parse_tok[i].start, "value1", parse_tok[i].end - parse_tok[i].start) == 0)
-                    {
-                        receiveData.value1 = (uint32_t) strtol(
-                                data + parse_tok[i + 1].start, (char**) NULL, 10);
-                        msgFound += 1;
-                        i++;
-                    }
-                    else if (strncmp(data + parse_tok[i].start, "value2", parse_tok[i].end - parse_tok[i].start) == 0)
-                    {
-                        receiveData.value2 = (uint32_t) strtol(
-                                data + parse_tok[i + 1].start, (char**) NULL, 10);
-                        msgFound += 1;
-                        i++;
-                    }
-                }
-
-                writeQueue(receive_handle, &receiveData);
             }
 
             break;

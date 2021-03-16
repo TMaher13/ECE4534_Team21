@@ -68,16 +68,9 @@ extern int createSensorThread(int threadStackSize, int prio);
 extern int createTask2Thread(int threadStackSize, int prio);
 extern int createReceiveThread(int threadStackSize, int prio);
 
-//Version 1
+//create queue handles
 QueueHandle_t sensor_handle;
-
-//Version2
-QueueHandle_t receive_handle;
-
-//Task2
 QueueHandle_t chain_handle;
-
-//Publish Queue
 QueueHandle_t publish_handle;
 
 /*
@@ -96,43 +89,25 @@ int main(void)
     debugInit();
     GPIO_init();
 
-    //Version1
+    //create queues
     sensor_handle = createSensorQueue(5, sizeof(struct sensorQueueStruct));
-
     if(sensor_handle == NULL)
         return (1);
 
-    //Version2
-    receive_handle = createQueue(5, sizeof(struct receiveQueueStruct));
-
-    if (receive_handle == NULL)
-        return(1);
-
-    //Task2
     chain_handle = createQueue(5, sizeof(struct chainQueueStruct));
-
     if(chain_handle == NULL)
         return(1);
 
     publish_handle = createQueue(5, sizeof(struct publishQueueStruct));
-
     if(publish_handle == NULL)
         return(1);
 
-    //version1
+    //initialize timers
     timer70Init();
     timer500Init();
 
-    //version2
-    //timer1000Init();
-
-    //version1
     createSensorThread(THREADSTACKSIZE, 1);
 
-    //version2
-    //createReceiveThread(THREADSTACKSIZE, 1);
-
-    //task2
     createTask2Thread(THREADSTACKSIZE, 1);
 
 
