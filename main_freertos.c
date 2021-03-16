@@ -97,10 +97,10 @@ int main(void)
     GPIO_init();
 
     //Version1
-    //sensor_handle = createSensorQueue(5, sizeof(struct sensorQueueStruct));
+    sensor_handle = createSensorQueue(5, sizeof(struct sensorQueueStruct));
 
-    //if(sensor_handle == NULL)
-        //return (1);
+    if(sensor_handle == NULL)
+        return (1);
 
     //Version2
     receive_handle = createQueue(5, sizeof(struct receiveQueueStruct));
@@ -120,17 +120,17 @@ int main(void)
         return(1);
 
     //version1
-    //timer70Init();
-    //timer500Init();
+    timer70Init();
+    timer500Init();
 
     //version2
-    timer1000Init();
+    //timer1000Init();
 
     //version1
-    //createSensorThread(THREADSTACKSIZE, 1);
+    createSensorThread(THREADSTACKSIZE, 1);
 
     //version2
-    createReceiveThread(THREADSTACKSIZE, 1);
+    //createReceiveThread(THREADSTACKSIZE, 1);
 
     //task2
     createTask2Thread(THREADSTACKSIZE, 1);

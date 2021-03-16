@@ -566,7 +566,6 @@ void *mqttThread(void * args){
      */
 
     ret = MQTT_IF_Subscribe(mqttClientHandle, "chain2", MQTT_QOS_0, BrokerCB);
-    ret |= MQTT_IF_Subscribe(mqttClientHandle, "joseph_sensor", MQTT_QOS_0, BrokerCB);
 
     if(ret < 0){
         while(1);

@@ -181,19 +181,6 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
                 writeQueue(receive_handle, &receiveData);
             }
 
-            // copying received topic data locally to send over msg queue
-            /*topic = (char*)malloc(receivedMetaData->topLen+1);
-            memcpy(topic, receivedMetaData->topic, receivedMetaData->topLen);
-            topic[receivedMetaData->topLen] = 0;
-
-            payload = (char*)malloc(dataLen+1);
-            memcpy(payload, data, dataLen);
-            payload[dataLen] = 0;
-
-            queueElement.event =   MQTT_EVENT_RECV;
-            queueElement.topic =   topic;
-            queueElement.payload = payload;*/
-
             break;
         }
         case MQTTClient_DISCONNECT_CB_EVENT:
@@ -249,42 +236,6 @@ void *MQTTAppThread(void *threadParams)
 
         ret = 0;
 
-        /*
-        if(queueElement.event == MQTT_EVENT_RECV)
-        {
-            //LOG_TRACE("MQTT APP THREAD: RECV TOPIC = %s", queueElement.topic);
-
-            pthread_mutex_lock(mMQTTContext.moduleMutex);
-
-            if(mMQTTContext.head != NULL){
-
-                struct Node* tmp = mMQTTContext.head;
-
-                // check what queueElement.topic to invoke the appropriate topic callback event for the user
-                while(ret == 0){
-                    ret = MQTTHelperTopicMatching(tmp->topicParams.topic, queueElement.topic);
-                    if(ret == 1){
-
-                        //LOG_DEBUG("TOPIC MATCH %s\r\n", queueElement.topic);
-
-                        tmp->topicCB(queueElement.topic, queueElement.payload);
-                        break;
-                    }
-                    tmp = tmp->next;
-                    if(tmp == NULL){
-                        //LOG_INFO("Cannot invoke CB for topic not in topic list\r\n");
-                        //LOG_INFO("TOPIC: %s \tPAYLOAD: %s\r\n", queueElement.topic, queueElement.payload);
-                        break;
-                    }
-                }
-            }
-
-            pthread_mutex_unlock(mMQTTContext.moduleMutex);
-
-            free(queueElement.topic);
-            free(queueElement.payload);
-        }
-        */
         // when MQTT_IF_Deinit is called we must close the message queue and terminate the MQTTAppThread
         if(queueElement.event == MQTT_EVENT_DESTROY)
         {
