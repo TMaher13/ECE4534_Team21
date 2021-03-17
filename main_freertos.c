@@ -45,6 +45,7 @@
 
 /* TI-RTOS Header files */
 #include <ti/drivers/GPIO.h>
+#include <ti/drivers/ADC.h>
 
 /* TI-DRIVERS Header files */
 #include "ti_drivers_config.h"
@@ -88,6 +89,7 @@ int main(void)
     Board_init();
     debugInit();
     GPIO_init();
+    ADC_init();
 
     //create queues
     sensor_handle = createSensorQueue(5, sizeof(struct sensorQueueStruct));

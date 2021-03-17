@@ -23,7 +23,7 @@
 extern BaseType_t readSensorQueue(QueueHandle_t handle, struct sensorQueueStruct *data);
 extern BaseType_t writeSensorQueue(QueueHandle_t handle, struct sensorQueueStruct *data);
 
-extern int sensorFSM(QueueHandle_t publish_handle, struct sensorQueueStruct *sensorMsg);
+extern void sensorFSM(QueueHandle_t publish_handle, struct sensorQueueStruct *sensorMsg);
 
 extern QueueHandle_t sensor_handle;
 extern QueueHandle_t publish_handle;
@@ -41,9 +41,8 @@ void *sensorThread(void *arg0) {
 
     dbgEvent(ENTER_SENSOR_TASK);
 
-    struct sensorQueueStruct sensorData; // = {TIMER70_MESSAGE, 0};
+    struct sensorQueueStruct sensorData;
     BaseType_t readRet;
-    int fsm_ret = 0;
 
     //dbgEvent(BEFORE_SENSOR_LOOP);
 
@@ -53,20 +52,12 @@ void *sensorThread(void *arg0) {
 
         dbgEvent(BEFORE_READ_SENSOR_QUEUE);
 
-        readRet = readSensorQueue( sensor_handle, &sensorData);
+        readRet = readSensorQueue(sensor_handle, &sensorData);
 
         dbgEvent(AFTER_READ_SENSOR_QUEUE);
 
         if(readRet == pdTRUE) {
-            fsm_ret = sensorFSM(publish_handle, &sensorData );
-            if(fsm_ret == 1){
-                fatalError(FSM_FATAL_ERROR1);
-                return NULL;
-            }
-            else if(fsm_ret == 2){
-                fatalError(FSM_FATAL_ERROR2);
-                return NULL;
-            }
+            sensorFSM(publish_handle, &sensorData );
         }
     }
 }

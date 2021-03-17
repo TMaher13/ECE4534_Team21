@@ -57,49 +57,15 @@ void timer70Init()
     }
 }
 
-uint32_t convert2mm(uint16_t adcValue)
-{
-    return adcValue * 10;
-}
-
 void timer70Callback(Timer_Handle myHandle, int_fast16_t status)
 {
     dbgEvent(ENTER_TIMER70_CALLBACK);
 
-    //int_fast16_t res;
-    //uint16_t adcValue;
-    //uint32_t mmValue;
-
     static struct sensorQueueStruct m;
 
-    static uint32_t spoofReading = 0;
-
-    spoofReading++;
     m.messageType = TIMER70_MESSAGE;
-    m.value = spoofReading;
-
-    if(spoofReading > 1000)
-        spoofReading = 0;
 
     writeSensorQueueCallback(&m);
 
-    //ADC_close(adc);
     dbgEvent(LEAVE_TIMER70_CALLBACK);
-
-    /*ADC_Params params;
-    ADC_Handle adc;
-    ADC_Params_init(&params);
-    adc = ADC_open(CONFIG_ADC_0, &params);
-    if (adc == NULL) {
-        Failed to initialized timer
-        while (1);
-    }
-    res = ADC_convert(0, &adcValue);
-    if (res == ADC_STATUS_SUCCESS)
-    {
-        mmValue = convert2mm(adcValue);
-    }
-    else {
-        mmValue = spoofReading;
-    }*/
 }

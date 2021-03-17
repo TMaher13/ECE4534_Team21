@@ -7,7 +7,7 @@
 #include <task.h>
 #include <queue.h>
 
-int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg);
+void sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg);
 
 #include <sensor_thread_state.c>
 

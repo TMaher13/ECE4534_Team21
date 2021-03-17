@@ -54,28 +54,15 @@ void timer500Init()
 
 }
 
-uint32_t convertTicks2ms(TickType_t ticks)
-{
-    return ticks * 1000;
-}
-
 void timer500Callback(Timer_Handle myHandle, int_fast16_t status)
 {
     dbgEvent(ENTER_TIMER500_CALLBACK);
-    static uint32_t lastTime = 0;
 
     static struct sensorQueueStruct m;
 
-    TickType_t tickCount = xTaskGetTickCountFromISR();
-
-    uint32_t present = convertTicks2ms(tickCount);
-
-    uint32_t msec = present - lastTime;
-    lastTime = present;
-
     m.messageType = TIMER500_MESSAGE;
-    m.value = msec;
 
     writeSensorQueueCallback(&m);
+
     dbgEvent(LEAVE_TIMER500_CALLBACK);
 }

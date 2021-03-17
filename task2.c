@@ -103,7 +103,6 @@ void *task2Thread(void *arg0) {
             );*/
 
     BaseType_t readRet;
-    BaseType_t publishQueueRet;
 
     //create payload (JSON String)
     static struct publishQueueStruct publish;
@@ -135,7 +134,7 @@ void *task2Thread(void *arg0) {
             memset(publish.payload, 0, SECRET_SIZE);
             snprintf(publish.payload, SECRET_SIZE, "{\"secret\":\"%s\"}", chainData.secret); // chainData.secret
 
-            publishQueueRet = writeQueue(publish_handle, &publish);
+            writeQueue(publish_handle, &publish);
 
             //xTimerReset(timer5000,0);
         }
@@ -144,7 +143,7 @@ void *task2Thread(void *arg0) {
                 memset(publish.payload, 0, SECRET_SIZE);
                 snprintf(publish.payload, SECRET_SIZE, "{\"secret\":\"abcdefghijklmnopqrstuvqxyz\"}"); // chainData.secret
 
-                publishQueueRet = writeQueue(publish_handle, &publish);
+                writeQueue(publish_handle, &publish);
             }
         }
         /*else if ((readRet == pdFALSE) && (ulCount == 5)){

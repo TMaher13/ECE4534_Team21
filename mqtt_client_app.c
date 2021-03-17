@@ -491,7 +491,6 @@ void *mqttThread(void * args){
     mq_attr attr;
     Timer_Params params;
     UART_Handle uartHandle;
-    struct msgQueue queueElement;
     MQTTClient_Handle mqttClientHandle;
 
     struct publishQueueStruct publishData;
@@ -566,6 +565,7 @@ void *mqttThread(void * args){
      */
 
     ret = MQTT_IF_Subscribe(mqttClientHandle, "chain2", MQTT_QOS_0, BrokerCB);
+    ret |= MQTT_IF_Subscribe(mqttClientHandle, "connor", MQTT_QOS_0, BrokerCB);
 
     if(ret < 0){
         while(1);

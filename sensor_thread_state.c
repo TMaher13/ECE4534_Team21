@@ -3,122 +3,160 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include <ti/drivers/ADC.h>
 #include <queue_structs.h>
 #include <debug.h>
 #include <FreeRTOS.h>
 #include <task.h>
 #include <queue.h>
 
+/* Driver configuration */
+#include "ti_drivers_config.h"
+
 extern writeQueue(QueueHandle_t handle, void * const data);
 
 extern void dbgEvent(unsigned int event);
 extern void fatalError(unsigned int event);
 
-int sensorFSM(QueueHandle_t publish_handle, struct sensorQueueStruct *sensorMsg) {
 
-    static int sensorTotal = 0, sensorCount = 0;
-    static int fsmState = 0; // 0 for INIT_AVERAGE, 1 for UPDATE_AVERAGE
+/* ADC sample count */
+#define ADC_SAMPLE_COUNT  (10)
 
-    BaseType_t publishQueueRet;
+void sensorFSM(QueueHandle_t publish_handle, struct sensorQueueStruct *sensorMsg) {
+
+    static int numMessages = 0;
+    static int total = 0;
+    static int avg = 0;
+    static int adcValue = 0;
 
     //create payload (JSON String)
     static struct publishQueueStruct publish;
-    char jsonStr[PAYLOAD_SIZE];
+    static char jsonStr[PAYLOAD_SIZE];
 
-    int avg;
+    static int messageID = 0;
 
-    static int publishAttempts = 0;
+    switch(sensorMsg->messageType) {
 
-    switch(fsmState) {
+        case TIMER70_MESSAGE:
+        {
+        ADC_Handle adc;
+        ADC_Params params;
+        int_fast16_t res;
 
-        case 0: // INIT_AVERAGE
-            if(sensorMsg->messageType == TIMER500_MESSAGE)
-                fsmState = 1;
-            else if(sensorMsg->messageType == TIMER70_MESSAGE)
-                fsmState = 0;
-            else
-                return 1;
+        ADC_Params_init(&params);
+        adc = ADC_open(CONFIG_ADC_0, &params);
+
+        if (adc == NULL)
+        {
+            while (1);
+        }
+
+        res = ADC_convert(adc, &adcValue);
+
+        ADC_close(adc);
+
+        /*
+         * CONVERT ADC TO MM
+         *
+         *
+         */
+
+        total += adcValue;
+        numMessages++;
+
+
+        //set topic
+        snprintf(publish.topic, TOPIC_SIZE, "joseph_sensor");
+
+        //set payload
+        memset(jsonStr, 0, PAYLOAD_SIZE);
+        snprintf(
+                jsonStr,
+                PAYLOAD_SIZE,
+                "{\"messageType\":\"%d\",\"messageID\":\"%d\",\"value1\":\"%d\",\"value2\":\"%d\"}",
+                TIMER70_MESSAGE,
+                messageID, adcValue, 0);
+        memcpy(publish.payload, jsonStr, PAYLOAD_SIZE);
+
+        //write to publish queue
+        writeQueue(publish_handle, &publish);
+
+        break;
+        }
+        case TIMER500_MESSAGE:
+        {
+            avg = total/numMessages;
+
+            //set topic
+            snprintf(publish.topic, TOPIC_SIZE, "joseph_sensor");
+
+            //set payload
+            memset(jsonStr, 0, PAYLOAD_SIZE);
+            snprintf(
+                    jsonStr,
+                    PAYLOAD_SIZE,
+                    "{\"messageType\":\"%d\",\"messageID\":\"%d\",\"value1\":\"%d\",\"value2\":\"%d\"}",
+                    TIMER500_MESSAGE, messageID, avg, 1);
+            memcpy(publish.payload, jsonStr, PAYLOAD_SIZE);
+
+            //write to publish queue
+            writeQueue(publish_handle, &publish);
+
+            numMessages = 0;
+            total = 0;
+            avg = 0;
+
             break;
 
-        case 1: // UPDATE_AVERAGE
-            if(sensorMsg->messageType == TIMER500_MESSAGE) {
+        }
+        case IPS_MESSAGE:
+                {
+                ADC_Handle adc;
+                ADC_Params params;
+                int_fast16_t res;
 
-                if(sensorCount != 0)
-                    avg = sensorTotal / sensorCount;
-                else
-                    avg = 0.0;
+                static int isMetal = 0;
 
-                //set topic
-                snprintf(publish.topic, TOPIC_SIZE, "joseph_sensor");
+                ADC_Params_init(&params);
+                adc = ADC_open(CONFIG_ADC_1, &params);
 
-                //set payload
-                memset(jsonStr, 0, PAYLOAD_SIZE);
-                snprintf(jsonStr, PAYLOAD_SIZE, "{\"messageType\":\"%d\",\"messageID\":\"%d\",\"value1\":\"%d\",\"value2\":\"%d\"}", TIMER500_MESSAGE, publishAttempts, avg, sensorMsg->value);
-                memcpy(publish.payload,jsonStr, PAYLOAD_SIZE);
-
-                publishQueueRet = writeQueue(publish_handle, &publish);
-
-                publishAttempts++;
-
-                //set topic
-                snprintf(publish.topic, TOPIC_SIZE, "connorStat");
-
-                //set payload
-                memset(jsonStr, 0, PAYLOAD_SIZE);
-                snprintf(jsonStr, PAYLOAD_SIZE, "{\"publishAttempts\":\"%d\"}", publishAttempts);
-                memcpy(publish.payload,jsonStr, PAYLOAD_SIZE);
-
-                publishQueueRet = writeQueue(publish_handle, &publish);
-
-                sensorTotal = 0;
-                sensorCount = 0;
-                fsmState = 0;
-            }
-            else if(sensorMsg->messageType == TIMER70_MESSAGE) {
-
-                sensorTotal += sensorMsg->value;
-                sensorCount++;
-
-                /*
-                memset(uartMsg, 0, PAYLOAD_SIZE);
-                snprintf(uartMsg, PAYLOAD_SIZE, "Sensor %d = %dmm", sensorCount, sensorMsg->value);
-                memcpy(uart.msg,uartMsg, PAYLOAD_SIZE);
-
-                dbgEvent(BEFORE_WRITE_UART_QUEUE_TIMER70);
-                uartQueueRet = writeUARTQueue(uart_handle, &uart);
-                dbgEvent(AFTER_WRITE_UART_QUEUE_TIMER70);
-                if(uartQueueRet != pdPASS) {
-                    fatalError(WRITE_UART_QUEUE_FATAL_ERROR_TIMER70);
+                if (adc == NULL)
+                {
+                    while (1);
                 }
-                */
+
+                res = ADC_convert(adc, &adcValue);
+
+                ADC_close(adc);
+
+                if (adcValue > 3000){
+                    isMetal = 1;
+                }
+                else if (adcValue < 100){
+                    isMetal = 0;
+                }
+                else {
+                    isMetal = -1;
+                }
 
                 //set topic
                 snprintf(publish.topic, TOPIC_SIZE, "joseph_sensor");
 
                 //set payload
                 memset(jsonStr, 0, PAYLOAD_SIZE);
-                snprintf(jsonStr, PAYLOAD_SIZE, "{\"messageType\":\"%d\",\"messageID\":\"%d\",\"value1\":\"%d\",\"value2\":\"%d\"}", TIMER70_MESSAGE, publishAttempts, sensorCount, sensorMsg->value);
-                memcpy(publish.payload,jsonStr, PAYLOAD_SIZE);
-                publishQueueRet = writeQueue(publish_handle, &publish);
+                snprintf(
+                        jsonStr,
+                        PAYLOAD_SIZE,
+                        "{\"messageType\":\"%d\",\"messageID\":\"%d\",\"value1\":\"%d\",\"value2\":\"%d\"}",
+                        IPS_MESSAGE,
+                        messageID, isMetal, adcValue);
+                memcpy(publish.payload, jsonStr, PAYLOAD_SIZE);
 
-                publishAttempts++;
+                //write to publish queue
+                writeQueue(publish_handle, &publish);
 
-                //set topic
-                snprintf(publish.topic, TOPIC_SIZE, "connorStat");
-
-                //set payload
-                memset(jsonStr, 0, PAYLOAD_SIZE);
-                snprintf(jsonStr, PAYLOAD_SIZE, "{\"publishAttempts\":\"%d\"}", publishAttempts);
-                memcpy(publish.payload,jsonStr, PAYLOAD_SIZE);
-
-                publishQueueRet = writeQueue(publish_handle, &publish);
-
-            }
-            else
-                return 2;
-            break;
+                break;
+          }
     }
-
-    return 0;
-
+    messageID++;
 }

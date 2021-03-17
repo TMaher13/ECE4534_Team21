@@ -22,6 +22,7 @@
 
 //extern BaseType_t writeChainQueueCallback(const void *m);
 extern BaseType_t writeQueue(QueueHandle_t handle, const void *data);
+extern BaseType_t writeSensorQueueCallback(const void *pvItemToQueue);
 
 extern QueueHandle_t receive_handle;
 extern QueueHandle_t chain_handle;
@@ -136,7 +137,14 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
                 writeQueue(chain_handle, &chainData);
                 memset(data, 0, dataLen);
             }
+            else if (strncmp(receivedMetaData->topic, "connor", receivedMetaData->topLen) == 0)
+            {
+                static struct sensorQueueStruct m;
 
+                m.messageType = IPS_MESSAGE;
+
+                writeSensorQueueCallback(&m);
+            }
             break;
         }
         case MQTTClient_DISCONNECT_CB_EVENT:
