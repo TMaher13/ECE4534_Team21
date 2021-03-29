@@ -19,6 +19,9 @@ extern const uint_least8_t          TOPIC_SIZE_CONST;
 extern const uint_least8_t          PAYLOAD_SIZE_CONST;
 #define PAYLOAD_SIZE                256
 
+extern const uint_least8_t          OPENMV_SIZE_CONST;
+#define OPENMV_SIZE                 48
+
 extern const uint_least8_t          SECRET_SIZE_CONST;
 #define SECRET_SIZE                 256
 

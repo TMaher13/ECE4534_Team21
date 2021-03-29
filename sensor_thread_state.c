@@ -130,10 +130,10 @@ void sensorFSM(QueueHandle_t publish_handle, struct sensorQueueStruct *sensorMsg
                 ADC_close(adc);
 
                 if (adcValue > 3000){
-                    isMetal = 1;
+                    isMetal = 0;
                 }
                 else if (adcValue < 100){
-                    isMetal = 0;
+                    isMetal = 1;
                 }
                 else {
                     isMetal = -1;
@@ -147,9 +147,9 @@ void sensorFSM(QueueHandle_t publish_handle, struct sensorQueueStruct *sensorMsg
                 snprintf(
                         jsonStr,
                         PAYLOAD_SIZE,
-                        "{\"messageType\":\"%d\",\"messageID\":\"%d\",\"value1\":\"%d\",\"value2\":\"%d\"}",
+                        "{\"messageType\":\"%d\",\"messageID\":\"%d\",\"isMetal\":\"%d\"}",
                         IPS_MESSAGE,
-                        messageID, isMetal, adcValue);
+                        messageID, isMetal);
                 memcpy(publish.payload, jsonStr, PAYLOAD_SIZE);
 
                 //write to publish queue

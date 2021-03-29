@@ -68,10 +68,12 @@ extern QueueHandle_t createQueue(unsigned int queueLen, unsigned int itemSize);
 extern int createSensorThread(int threadStackSize, int prio);
 extern int createTask2Thread(int threadStackSize, int prio);
 extern int createReceiveThread(int threadStackSize, int prio);
+extern int createUartThread(int threadStackSize, int prio);
 
 //create queue handles
 QueueHandle_t sensor_handle;
-QueueHandle_t chain_handle;
+//QueueHandle_t camera_handle;
+//QueueHandle_t chain_handle;
 QueueHandle_t publish_handle;
 
 /*
@@ -96,21 +98,31 @@ int main(void)
     if(sensor_handle == NULL)
         return (1);
 
+    /*
     chain_handle = createQueue(5, sizeof(struct chainQueueStruct));
     if(chain_handle == NULL)
-        return(1);
+        return (1);
+    */
+
+    /*
+    camera_handle = createQueue(5, PAYLOAD_SIZE));
+    if (camera_handle == NULL)
+        return (1);
+    */
 
     publish_handle = createQueue(5, sizeof(struct publishQueueStruct));
     if(publish_handle == NULL)
-        return(1);
+        return (1);
 
     //initialize timers
-    timer70Init();
-    timer500Init();
+    //timer70Init();
+    //timer500Init();
 
     createSensorThread(THREADSTACKSIZE, 1);
 
-    createTask2Thread(THREADSTACKSIZE, 1);
+    createUartThread(THREADSTACKSIZE, 1);
+
+    //createTask2Thread(THREADSTACKSIZE, 1);
 
 
     //overall mqtt thread for all TI's

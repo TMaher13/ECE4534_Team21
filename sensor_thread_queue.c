@@ -12,7 +12,7 @@
 //#include "sensor_thread_queue.h"
 
 extern QueueHandle_t sensor_handle;
-extern QueueHandle_t chain_handle;
+//extern QueueHandle_t chain_handle;
 extern QueueHandle_t receive_handle;
 
 extern void dbgEvent(unsigned int event);
@@ -66,6 +66,7 @@ BaseType_t writeSensorQueueCallback(struct sensorQueueStruct *m)
     return res;
 }
 
+/*
 BaseType_t writeChainQueueCallback(const void *m)
 {
     //dbgEvent(ENTER_SENSOR_QUEUE_CALLBACK);
@@ -77,13 +78,14 @@ BaseType_t writeChainQueueCallback(const void *m)
 
 
     if( xHigherPriorityTaskWoken ) {
-        /* Actual macro used here is port specific. */
+        //Actual macro used here is port specific.
         taskYIELD ();
     }
 
     //dbgEvent(LEAVE_SENSOR_QUEUE_CALLBACK);
     return res;
 }
+*/
 
 BaseType_t writeReceiveQueueCallback(const void *m)
 {

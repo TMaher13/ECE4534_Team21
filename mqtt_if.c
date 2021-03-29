@@ -25,7 +25,7 @@ extern BaseType_t writeQueue(QueueHandle_t handle, const void *data);
 extern BaseType_t writeSensorQueueCallback(const void *pvItemToQueue);
 
 extern QueueHandle_t receive_handle;
-extern QueueHandle_t chain_handle;
+//extern QueueHandle_t chain_handle;
 
 
 enum{
@@ -70,10 +70,10 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
     int status;
     struct msgQueue queueElement;
 
-    static struct chainQueueStruct chainData;
+    //static struct chainQueueStruct chainData;
 
-    jsmn_parser parser;
-    jsmntok_t parse_tok[16];
+    //jsmn_parser parser;
+    //jsmntok_t parse_tok[16];
 
     switch((MQTTClient_EventCB)event)
     {
@@ -120,6 +120,7 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
 
             receivedMetaData = (MQTTClient_RecvMetaDataCB *)metaData;
 
+            /*
             if (strncmp(receivedMetaData->topic, "chain2", receivedMetaData->topLen) == 0) {
                 jsmn_init(&parser);
                 int ret = jsmn_parse(&parser, data, dataLen, parse_tok,
@@ -137,7 +138,8 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
                 writeQueue(chain_handle, &chainData);
                 memset(data, 0, dataLen);
             }
-            else if (strncmp(receivedMetaData->topic, "connor", receivedMetaData->topLen) == 0)
+            */
+            if (strncmp(receivedMetaData->topic, "connor", receivedMetaData->topLen) == 0)
             {
                 static struct sensorQueueStruct m;
 

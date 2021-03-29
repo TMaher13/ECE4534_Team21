@@ -34,12 +34,13 @@ const GPIO12         = GPIO.addInstance();
 const GPIO13         = GPIO.addInstance();
 const Power          = scripting.addModule("/ti/drivers/Power");
 const SPI            = scripting.addModule("/ti/drivers/SPI");
-const SPI1           = SPI.addInstance();
 const Timer          = scripting.addModule("/ti/drivers/Timer");
 const Timer1         = Timer.addInstance();
 const Timer2         = Timer.addInstance();
 const Timer3         = Timer.addInstance();
 const Timer4         = Timer.addInstance();
+const UART           = scripting.addModule("/ti/drivers/UART", {}, false);
+const UART2          = UART.addInstance();
 const Watchdog       = scripting.addModule("/ti/drivers/Watchdog");
 const Watchdog1      = Watchdog.addInstance();
 const SimpleLinkWifi = scripting.addModule("/ti/drivers/net/wifi/SimpleLinkWifi");
@@ -118,17 +119,6 @@ GPIO13.$name = "CONFIG_GPIO_7";
 Power.ioRetentionShutdown = ["GRP_1"];
 Power.parkPins.$name      = "ti_drivers_power_PowerCC32XXPins0";
 
-SPI1.$name                    = "CONFIG_SPI_0";
-SPI1.mode                     = "Four Pin SS Active Low";
-SPI1.defaultTxBufferValue     = "0";
-SPI1.spi.$assign              = "SPI0";
-SPI1.spi.sclkPin.$assign      = "boosterpack.7";
-SPI1.spi.misoPin.$assign      = "boosterpack.14";
-SPI1.spi.mosiPin.$assign      = "boosterpack.15";
-SPI1.spi.dmaRxChannel.$assign = "UDMA_CH6";
-SPI1.spi.dmaTxChannel.$assign = "UDMA_CH7";
-SPI1.spi.ssPin.$assign        = "boosterpack.18";
-
 Timer1.$name         = "CONFIG_TIMER_0";
 Timer1.timerType     = "32 Bits";
 Timer1.timer.$assign = "Timer0";
@@ -145,6 +135,11 @@ Timer4.$name         = "CONFIG_TIMER_3";
 Timer4.timerType     = "32 Bits";
 Timer4.timer.$assign = "Timer3";
 
+UART2.$name              = "CONFIG_UART_1";
+UART2.uart.$assign       = "UART1";
+UART2.uart.rxPin.$assign = "boosterpack.18";
+UART2.uart.txPin.$assign = "boosterpack.15";
+
 Watchdog1.$name            = "CONFIG_WATCHDOG_0";
 Watchdog1.watchdog.$assign = "WATCHDOG0";
 
@@ -159,6 +154,6 @@ SlNet1.ifName = "CC32xx";
 GPIO3.gpioPin.$suggestSolution  = "boosterpack.29";
 GPIO4.gpioPin.$suggestSolution  = "boosterpack.9";
 GPIO5.gpioPin.$suggestSolution  = "boosterpack.10";
-GPIO11.gpioPin.$suggestSolution = "boosterpack.28";
-GPIO12.gpioPin.$suggestSolution = "boosterpack.2";
-GPIO13.gpioPin.$suggestSolution = "boosterpack.5";
+GPIO11.gpioPin.$suggestSolution = "boosterpack.7";
+GPIO12.gpioPin.$suggestSolution = "boosterpack.14";
+GPIO13.gpioPin.$suggestSolution = "boosterpack.28";

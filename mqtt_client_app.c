@@ -564,8 +564,7 @@ void *mqttThread(void * args){
      * of the topic callbacks. The user may still call subscribe after connect but have to be aware of this.
      */
 
-    ret = MQTT_IF_Subscribe(mqttClientHandle, "chain2", MQTT_QOS_0, BrokerCB);
-    ret |= MQTT_IF_Subscribe(mqttClientHandle, "connor", MQTT_QOS_0, BrokerCB);
+    ret = MQTT_IF_Subscribe(mqttClientHandle, "connor", MQTT_QOS_0, BrokerCB);
 
     if(ret < 0){
         while(1);
@@ -601,22 +600,6 @@ void *mqttThread(void * args){
         }
     }
 }
-
-/*
- *             publishAttempts++;
-            sprintf(publishAttemptsStr, "{\"publishAttemptsStr\":\"%d\"}", publishAttempts);
-            MQTT_IF_Publish(mqttClientHandle,
-                            publishData.topic,
-                            publishData.payload,
-                            strlen(publishData.payload),
-                            MQTT_QOS_0);
-            //Version1
-            MQTT_IF_Publish(mqttClientHandle,
-                            "connor_stats",
-                            publishAttemptsStr,
-                            strlen(publishAttemptsStr),
-                            MQTT_QOS_0);
- */
 
 //*****************************************************************************
 //
