@@ -61,8 +61,6 @@
 #include "mqtt_if.h"
 #include "debug_if.h"
 
-#include "debug.h"
-
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
@@ -531,12 +529,10 @@ void *mqttThread(void * args){
         while(1);
     }
 
-    dbgEvent(BEFORE_INIT_WIFI);
     ret = WifiInit();
     if(ret < 0){
         while(1);
     }
-    dbgEvent(AFTER_INIT_WIFI);
 
     params.period = 1500000;
     params.periodUnits = Timer_PERIOD_US;
@@ -549,12 +545,10 @@ void *mqttThread(void * args){
         while(1);
     }
 
-    dbgEvent(BEFORE_MQTT_IF_INIT);
     ret = MQTT_IF_Init(mqttInitParams);
     if(ret < 0){
         while(1);
     }
-    dbgEvent(AFTER_MQTT_IF_INIT);
 
 #ifdef MQTT_SECURE_CLIENT
     setTime();
@@ -572,6 +566,10 @@ void *mqttThread(void * args){
     ret |= MQTT_IF_Subscribe(mqttClientHandle, "lidar_info", MQTT_QOS_0, BrokerCB);
     ret |= MQTT_IF_Subscribe(mqttClientHandle, "lidar_scan", MQTT_QOS_0, BrokerCB);
     ret |= MQTT_IF_Subscribe(mqttClientHandle, "lidar_stop", MQTT_QOS_0, BrokerCB);
+    ret |= MQTT_IF_Subscribe(mqttClientHandle, "request_path", MQTT_QOS_0, BrokerCB);
+    ret |= MQTT_IF_Subscribe(mqttClientHandle, "camera_detect", MQTT_QOS_0, BrokerCB);
+    ret |= MQTT_IF_Subscribe(mqttClientHandle, "front_dist", MQTT_QOS_0, BrokerCB);
+
 
     if(ret < 0){
         while(1);
@@ -580,17 +578,14 @@ void *mqttThread(void * args){
         LOG_INFO("Subscribed to all topics successfully\r\n");
     }
 
-    dbgEvent(BEFORE_MQTT_IF_CONNECT);
     mqttClientHandle = MQTT_IF_Connect(mqttClientParams, mqttConnParams, MQTT_EventCallback);
     if(mqttClientHandle < 0){
         while(1);
     }
-    dbgEvent(AFTER_MQTT_IF_CONNECT);
 
     // wait for CONNACK
     while(connected == 0);
 
-    dbgEvent(BEFORE_MQTT_LOOP);
     while(1){
         readRet = readQueue(mqtt_handle, &mqttData);
 

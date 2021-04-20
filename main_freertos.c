@@ -54,28 +54,26 @@
 
 #include <queue_structs.h>
 
+#include <uart_term.h>
+
 extern void * mqttThread(void *arg0);
 
 /* Stack size in bytes */
-#define THREADSTACKSIZE   2048
+#define THREADSTACKSIZE       2048
+#define MQTTTHREADSTACKSIZE   2048
+#define NAVTHREADSTACKSIZE    4300
 
-extern void timer500Init();
-extern void timer70Init();
 extern void timer1000Init();
-extern void debugInit();
 
-extern QueueHandle_t createSensorQueue(unsigned int queueLen, unsigned int itemSize);
 extern QueueHandle_t createQueue(unsigned int queueLen, unsigned int itemSize);
 
 extern int createLidarThread(int threadStackSize, int prio);
-extern int createCameraThread(int threadStackSize, int prio);
 extern int createNavigationThread(int threadStackSize, int prio);
 extern int createMQTTThread(int threadStackSize, int prio);
 
 
 // Task queue handles
 QueueHandle_t lidar_handle;
-//QueueHandle_t camera_handle;
 QueueHandle_t nav_handle;
 
 // MQTT task handle
@@ -88,17 +86,10 @@ int main(void) {
 
     /* Call board init functions */
     Board_init();
-    debugInit();
-
-    // Initialize I2C for interfacing with OpenMV H7 camera
-    I2C_init();
 
     // Initialize UART and GPIO for interfacing with RPLidar A1 sensor
     UART_init();
     GPIO_init();
-    //GPIO_setConfig(CONFIG_GPIO_MOTOCTL_8, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_OFF);
 
     // Queue for sending navigation data to the nvagigation task
     lidar_handle = createQueue(5, sizeof(struct lidarQueueStruct));
@@ -127,17 +118,13 @@ int main(void) {
         }
     }
 
-    GPIO_toggle(CONFIG_GPIO_LED_0);
+    timer1000Init();
 
-    createMQTTThread(THREADSTACKSIZE, 1);
+    createMQTTThread(THREADSTACKSIZE, 2);
 
     createLidarThread(THREADSTACKSIZE, 1);
 
-    GPIO_toggle(CONFIG_GPIO_LED_0);
-
-    //createCameraThread(THREADSTACKSIZE, 1);
-
-    //createNavigationThread(THREADSTACKSIZE, 1);
+    createNavigationThread(NAVTHREADSTACKSIZE, 2);
 
     /* Start the FreeRTOS scheduler */
     vTaskStartScheduler();

@@ -16,7 +16,6 @@ QueueHandle_t createQueue(unsigned int queueLen, unsigned int itemSize) {
     return xQueueCreate(queueLen, itemSize);
 }
 
-
 BaseType_t readQueue(QueueHandle_t handle, const void *data) {
 
     return xQueueReceive(handle, data, 100);

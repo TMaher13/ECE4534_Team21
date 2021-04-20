@@ -10,14 +10,12 @@
 #include <queue_structs.h>
 
 
-QueueHandle_t createSensorQueue(unsigned int queueLen, unsigned int itemSize);
+QueueHandle_t createQueue(unsigned int queueLen, unsigned int itemSize);
 
-BaseType_t readSensorQueue(QueueHandle_t handle, struct sensorQueueStruct *data);
+BaseType_t readQueue(QueueHandle_t handle, const void *data);
 
-BaseType_t writeSensorQueue(QueueHandle_t handle, struct sensorQueueStruct *data);
+BaseType_t writeQueue(QueueHandle_t handle, const void *data);
 
-BaseType_t writeSensorQueueCallback(const void *pvItemToQueue);
-
-BaseType_t writeChainQueueCallback(const void *m);
+BaseType_t writeQueueCallback(QueueHandle_t handle, const void *m);
 
 #endif

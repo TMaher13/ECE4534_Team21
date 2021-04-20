@@ -29,11 +29,8 @@
 
 extern BaseType_t writeQueueCallback(QueueHandle_t handle, const void *m);
 
-extern UART_Handle requestLidarHealth(void);
-extern int requestLidarScan(UART_Handle uartHandle);
-extern int requestLidarStop(UART_Handle uartHandle);
-
 extern QueueHandle_t lidar_handle;
+extern QueueHandle_t nav_handle;
 extern QueueHandle_t mqtt_handle;
 
 
@@ -74,12 +71,15 @@ static struct mqttContext
 } mMQTTContext = {NULL, NULL, NULL, NULL, NULL, MQTT_STATE_IDLE, 0};
 
 
+
+
 // Callback invoked by the internal MQTT library to notify the application of MQTT events
 void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, void *data, uint32_t dataLen)
 {
     int status;
     struct msgQueue queueElement;
     static struct lidarQueueStruct lidarRequest;
+    static struct navQueueStruct navRequest;
     BaseType_t writeRet;
 
     static jsmn_parser parser;
@@ -142,47 +142,56 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
              *
              *
              */
-            if(strncmp(receivedMetaData->topic, "rover_message", receivedMetaData->topLen) == 0) {
+            if(strncmp(receivedMetaData->topic, "camera_detect", receivedMetaData->topLen) == 0) {
+                navRequest.messageType = CAMERA_MESSAGE;
                 int ret = jsmn_parse(&parser, data, strlen(data),
                                      parse_tok,
                                      sizeof(parse_tok) / sizeof(parse_tok[0]));
 
-                //int msgFound = 0;
                 int i;
-                for (i = 1; i < ret; ++i) {
-                    if (strncmp(data + parse_tok[i].start, "messageType", parse_tok[i].end - parse_tok[i].start) == 0)
-                    {
-                        /*
-                        receiveData.messageType = (int_least8_t) strtol(data + parse_tok[i + 1].start,
-                                                                        (char**) NULL,
-                                                                        10);
-                        msgFound += 1;
-                        i++;
-                        */
+                for (i=1; i<ret; ++i) {
+                    if (strncmp(data + parse_tok[i].start, "type", parse_tok[i].end - parse_tok[i].start) == 0) {
+
+                        navRequest.imgDet.object = (int_least8_t) strtol(data + parse_tok[i + 1].start,
+                                                                         (char**) NULL,
+                                                                         10);
+
                     }
-                    else if (strncmp(data + parse_tok[i].start, "value1", parse_tok[i].end - parse_tok[i].start) == 0)
-                    {
-                        /*
-                        receiveData.value1 = (uint32_t) strtol(data + parse_tok[i + 1].start,
-                                                               (char**) NULL,
-                                                               10);
-                        msgFound += 1;
-                        i++;
-                        */
+                    else if (strncmp(data + parse_tok[i].start, "angle", parse_tok[i].end - parse_tok[i].start) == 0) {
+                        navRequest.imgDet.angle = (int_least8_t) strtol(data + parse_tok[i + 1].start,
+                                                                       (char**) NULL,
+                                                                       10);
                     }
-                    else if (strncmp(data + parse_tok[i].start, "value2", parse_tok[i].end - parse_tok[i].start) == 0)
-                    {
-                        /*
-                        receiveData.value2 = (uint32_t) strtol(data + parse_tok[i + 1].start,
-                                                               (char**) NULL,
-                                                               10);
-                        msgFound += 1;
-                        i++;
-                        */
-                     }
-                 }
+                    else if (strncmp(data + parse_tok[i].start, "inFront", parse_tok[i].end - parse_tok[i].start) == 0) {
+                        navRequest.imgDet.location = (int_least8_t) strtol(data + parse_tok[i + 1].start,
+                                                                          (char**) NULL,
+                                                                          10);
+                    }
+                }
+
+                //UART_PRINT("Camera detection: %d %d %d\r\n", navRequest.imgDet.object,
+                //                                             navRequest.imgDet.angle,
+                //                                             navRequest.imgDet.location);
+
+                writeRet = writeQueueCallback(nav_handle, &navRequest);
+                if(writeRet == errQUEUE_FULL)
+                    UART_PRINT("Nav queue full\r\n");
             }
-            else if(strncmp(receivedMetaData->topic, "arm_message", receivedMetaData->topLen) == 0) {
+            else if(strncmp(receivedMetaData->topic, "request_path", receivedMetaData->topLen) == 0) {
+                navRequest.messageType = REQUEST_MESSAGE;
+                navRequest.request = ROVER_PATH_REQUEST;
+
+                writeRet = writeQueueCallback(nav_handle, &navRequest);
+                if(writeRet == errQUEUE_FULL)
+                    UART_PRINT("Nav queue full\r\n");
+            }
+            else if(strncmp(receivedMetaData->topic, "front_dist", receivedMetaData->topLen) == 0) {
+                navRequest.messageType = REQUEST_MESSAGE;
+                navRequest.request = SIMPLE_DIST_REQUEST;
+
+                writeRet = writeQueueCallback(nav_handle, &navRequest);
+                if(writeRet == errQUEUE_FULL)
+                    UART_PRINT("Nav queue full\r\n");
 
             }
             else if(strncmp(receivedMetaData->topic, "lidar_health", receivedMetaData->topLen) == 0) {
@@ -241,6 +250,8 @@ void MQTTClientCallback(int32_t event, void *metaData, uint32_t metaDateLen, voi
     if(status < 0){
         //LOG_ERROR("msg queue send error %d", status);
     }
+
+    memset(data, 0, dataLen);
 }
 
 // Helper function used to compare topic strings and accounts for MQTT wild cards
