@@ -1,9 +1,3 @@
-/*
- *
- *
- *
- */
-
 #ifndef SENSOR_THREAD_STATE
 #define SENSOR_THREAD_STATE
 

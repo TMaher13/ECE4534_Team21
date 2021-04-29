@@ -1,0 +1,134 @@
+/**
+ * These arguments were used when this file was generated. They will be automatically applied on subsequent loads
+ * via the GUI or CLI. Run CLI with '--help' for additional information on how to override these arguments.
+ * @cliArgs --board "/ti/boards/CC3220SF_LAUNCHXL" --product "simplelink_cc32xx_sdk@4_20_00_07"
+ * @versions {"data":"2021010520","timestamp":"2021010520","tool":"1.7.0+1746","templates":null}
+ */
+
+/**
+ * Import the modules used in this configuration.
+ */
+const DriverLib      = scripting.addModule("/ti/devices/DriverLib");
+const Display        = scripting.addModule("/ti/display/Display");
+const Display1       = Display.addInstance();
+const Board          = scripting.addModule("/ti/drivers/Board");
+const Crypto         = scripting.addModule("/ti/drivers/Crypto");
+const Crypto1        = Crypto.addInstance();
+const DMA            = scripting.addModule("/ti/drivers/DMA");
+const GPIO           = scripting.addModule("/ti/drivers/GPIO");
+const GPIO1          = GPIO.addInstance();
+const GPIO2          = GPIO.addInstance();
+const GPIO3          = GPIO.addInstance();
+const GPIO4          = GPIO.addInstance();
+const GPIO5          = GPIO.addInstance();
+const GPIO6          = GPIO.addInstance();
+const GPIO7          = GPIO.addInstance();
+const GPIO8          = GPIO.addInstance();
+const GPIO9          = GPIO.addInstance();
+const PWM            = scripting.addModule("/ti/drivers/PWM", {}, false);
+const PWM1           = PWM.addInstance();
+const PWM2           = PWM.addInstance();
+const PWM3           = PWM.addInstance();
+const PWM4           = PWM.addInstance();
+const Power          = scripting.addModule("/ti/drivers/Power");
+const RTOS           = scripting.addModule("/ti/drivers/RTOS");
+const SPI            = scripting.addModule("/ti/drivers/SPI");
+const SPI1           = SPI.addInstance();
+const Watchdog       = scripting.addModule("/ti/drivers/Watchdog");
+const Watchdog1      = Watchdog.addInstance();
+const SimpleLinkWifi = scripting.addModule("/ti/drivers/net/wifi/SimpleLinkWifi");
+const SlNet          = scripting.addModule("/ti/net/SlNet");
+const SlNet1         = SlNet.addInstance();
+
+/**
+ * Write custom configuration values to the imported modules.
+ */
+Display1.$name                          = "CONFIG_Display_0";
+Display1.$hardware                      = system.deviceData.board.components.XDS110UART;
+Display1.uart.$name                     = "CONFIG_UART_0";
+Display1.uart.useDMA                    = true;
+Display1.uart.uart.$assign              = "UART0";
+Display1.uart.uart.txPin.$assign        = "55";
+Display1.uart.uart.rxPin.$assign        = "57";
+Display1.uart.uart.txDmaChannel.$assign = "UDMA_CH9";
+Display1.uart.uart.rxDmaChannel.$assign = "UDMA_CH8";
+
+Crypto1.$name = "CONFIG_Crypto_0";
+
+GPIO1.$hardware       = system.deviceData.board.components.SW2;
+GPIO1.$name           = "CONFIG_GPIO_BUTTON_0";
+GPIO1.gpioPin.$assign = "boosterpack.3";
+
+GPIO2.$hardware       = system.deviceData.board.components.SW3;
+GPIO2.$name           = "CONFIG_GPIO_BUTTON_1";
+GPIO2.gpioPin.$assign = "boosterpack.11";
+
+GPIO3.$name           = "CONFIG_GPIO_0";
+GPIO3.mode            = "Dynamic";
+GPIO3.gpioPin.$assign = "boosterpack.4";
+
+GPIO4.$name           = "CONFIG_GPIO_2";
+GPIO4.mode            = "Dynamic";
+GPIO4.gpioPin.$assign = "boosterpack.17";
+
+GPIO5.$name           = "CONFIG_GPIO_3";
+GPIO5.gpioPin.$assign = "boosterpack.30";
+
+GPIO6.$name           = "CONFIG_GPIO_4";
+GPIO6.gpioPin.$assign = "boosterpack.19";
+
+GPIO7.$name = "CONFIG_GPIO_5";
+
+GPIO8.$name = "CONFIG_GPIO_6";
+
+GPIO9.$name = "CONFIG_GPIO_7";
+
+PWM1.$name     = "CONFIG_PWM_0";
+PWM1.$hardware = system.deviceData.board.components.LED_YELLOW;
+
+PWM2.$name     = "CONFIG_PWM_1";
+PWM2.$hardware = system.deviceData.board.components.LED_GREEN;
+
+PWM3.$name                = "CONFIG_PWM_2";
+PWM3.$hardware            = system.deviceData.board.components.LED_RED;
+PWM3.timer.$assign        = "Timer2";
+PWM3.timer.pwmPin.$assign = "boosterpack.29";
+
+PWM4.$name                = "CONFIG_PWM_3";
+PWM4.timer.$assign        = "Timer1";
+PWM4.timer.pwmPin.$assign = "boosterpack.13";
+
+Power.ioRetentionShutdown = ["GRP_1"];
+Power.parkPins.$name      = "ti_drivers_power_PowerCC32XXPins0";
+
+RTOS.name = "FreeRTOS";
+
+SPI1.$name                    = "CONFIG_SPI_0";
+SPI1.mode                     = "Four Pin SS Active Low";
+SPI1.defaultTxBufferValue     = "0";
+SPI1.spi.$assign              = "SPI0";
+SPI1.spi.sclkPin.$assign      = "boosterpack.7";
+SPI1.spi.misoPin.$assign      = "boosterpack.14";
+SPI1.spi.mosiPin.$assign      = "boosterpack.15";
+SPI1.spi.dmaRxChannel.$assign = "UDMA_CH6";
+SPI1.spi.dmaTxChannel.$assign = "UDMA_CH7";
+SPI1.spi.ssPin.$assign        = "boosterpack.18";
+
+Watchdog1.$name            = "CONFIG_WATCHDOG_0";
+Watchdog1.watchdog.$assign = "WATCHDOG0";
+
+SlNet1.$name  = "CONFIG_SLNET";
+SlNet1.ifName = "CC32xx";
+
+/**
+ * Pinmux solution for unlocked pins/peripherals. This ensures that minor changes to the automatic solver in a future
+ * version of the tool will not impact the pinmux you originally saw.  These lines can be completely deleted in order to
+ * re-solve from scratch.
+ */
+GPIO7.gpioPin.$suggestSolution     = "boosterpack.28";
+GPIO8.gpioPin.$suggestSolution     = "boosterpack.2";
+GPIO9.gpioPin.$suggestSolution     = "boosterpack.26";
+PWM1.timer.$suggestSolution        = "Timer3";
+PWM1.timer.pwmPin.$suggestSolution = "boosterpack.9";
+PWM2.timer.$suggestSolution        = "Timer3";
+PWM2.timer.pwmPin.$suggestSolution = "boosterpack.10";

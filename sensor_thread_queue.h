@@ -1,9 +1,3 @@
-/*
- *
- *
- *
- */
-
 #ifndef SENSOR_THREAD_QUEUE
 #define SENSOR_THREAD_QUEUE
 
@@ -23,5 +17,7 @@ BaseType_t readSensorQueue(QueueHandle_t handle, struct sensorQueueStruct *data)
 BaseType_t writeSensorQueue(QueueHandle_t handle, struct sensorQueueStruct *data);
 
 BaseType_t writeSensorQueueCallback(const void *pvItemToQueue);
+
+BaseType_t writeChainQueueCallback(const void *m);
 
 #endif

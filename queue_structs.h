@@ -1,4 +1,3 @@
-
 #ifndef QUEUE_STRUCTS
 #define QUEUE_STRUCTS
 
@@ -11,8 +10,18 @@ extern const uint_least8_t          TIMER70_MESSAGE_CONST;
 extern const uint_least8_t          TIMER500_MESSAGE_CONST;
 #define TIMER500_MESSAGE            1
 
-extern const uint_least8_t          BUFFER_SIZE_CONST;
-#define BUFFER_SIZE                 64
+extern const uint_least8_t          TIMER1000_MESSAGE_CONST;
+#define TIMER1000_MESSAGE           2
+#define IPSMESSAGE                  4
+
+extern const uint_least8_t          TOPIC_SIZE_CONST;
+#define TOPIC_SIZE                  64
+
+extern const uint_least8_t          PAYLOAD_SIZE_CONST;
+#define PAYLOAD_SIZE                256
+
+extern const uint_least8_t          SECRET_SIZE_CONST;
+#define SECRET_SIZE                 256
 
 struct sensorQueueStruct {
 
@@ -21,11 +30,25 @@ struct sensorQueueStruct {
 
 };
 
-struct uartQueueStruct {
+struct receiveQueueStruct {
 
-    char msg[BUFFER_SIZE];
+    uint_least8_t messageType;
+    int8_t type;
+    int8_t angle;
+    int8_t inFront;
+};
+
+struct publishQueueStruct {
+
+    char topic[TOPIC_SIZE];
+    char payload[PAYLOAD_SIZE];
 
 };
+
+struct chainQueueStruct {
+    char secret[SECRET_SIZE];
+};
+
 
 
 #endif

@@ -1,10 +1,3 @@
-/*
- *
- *
- *
- */
-
-// General includes
 #include <unistd.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -28,12 +21,12 @@
 //#include <sensor_thread_state.h>
 
 extern BaseType_t readSensorQueue(QueueHandle_t handle, struct sensorQueueStruct *data);
-extern BaseType_t writeSensorQueue(QueueHandle_t handle, struct sensorQueueStruct *data, bool blocking);
+extern BaseType_t writeSensorQueue(QueueHandle_t handle, struct sensorQueueStruct *data);
 
-extern int sensorFSM(QueueHandle_t uart_handle, struct sensorQueueStruct *sensorMsg);
+extern int sensorFSM(QueueHandle_t publish_handle, struct sensorQueueStruct *sensorMsg);
 
 extern QueueHandle_t sensor_handle;
-extern QueueHandle_t uart_handle;
+extern QueueHandle_t publish_handle;
 
 extern void dbgEvent(unsigned int event);
 extern void fatalError(unsigned int event);
@@ -52,24 +45,20 @@ void *sensorThread(void *arg0) {
     BaseType_t readRet;
     int fsm_ret = 0;
 
-    dbgEvent(BEFORE_SENSOR_LOOP);
+    //dbgEvent(BEFORE_SENSOR_LOOP);
 
-    GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+
 
     for(;;) {
 
         dbgEvent(BEFORE_READ_SENSOR_QUEUE);
 
         readRet = readSensorQueue( sensor_handle, &sensorData);
-        /*while( sensorData.messageType != TIMER70_MESSAGE && sensorData.messageType != TIMER500_MESSAGE) {
-            // block and wait to read
-            readSensorQueue( sensor_handle, &sensorData);
-        }*/
 
         dbgEvent(AFTER_READ_SENSOR_QUEUE);
 
         if(readRet == pdTRUE) {
-            fsm_ret = sensorFSM( uart_handle, &sensorData );
+            fsm_ret = sensorFSM(publish_handle, &sensorData );
             if(fsm_ret == 1){
                 fatalError(FSM_FATAL_ERROR1);
                 return NULL;
@@ -80,8 +69,6 @@ void *sensorThread(void *arg0) {
             }
         }
     }
-
-    return NULL;
 }
 
 

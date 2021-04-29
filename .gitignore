@@ -1,9 +1,3 @@
-Debug*
+/Debug/
 
-.launches
-.launches/*
-
-project.log
-
-.cproject
-.ccsproject
+network_if.h

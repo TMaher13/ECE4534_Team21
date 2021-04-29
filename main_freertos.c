@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,63 +35,117 @@
  */
 #include <stdint.h>
 
-#ifdef __ICCARM__
-#include <DLib_Threads.h>
-#endif
+/* POSIX Header files */
+#include <pthread.h>
 
 /* RTOS header files */
-#include <FreeRTOS.h>
-#include <task.h>
-#include <queue.h>
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
 
+/* TI-RTOS Header files */
 #include <ti/drivers/GPIO.h>
-#include <ti_drivers_config.h>
-#include <ti/drivers/Board.h>
+
+/* TI-DRIVERS Header files */
+#include "ti_drivers_config.h"
 
 #include <queue_structs.h>
+#include <armStatusFSM.h>
 
-extern void timer500Init();
-extern void timer70Init();
-extern void debugInit();
-
-extern int createSensorThread(int threadStackSize, int prio);
-extern int createUARTThread(int threadStackSize, int prio);
-
-extern QueueHandle_t createSensorQueue(unsigned int queueLen, unsigned int itemSize);
-extern QueueHandle_t createUARTQueue(unsigned int queueLen, unsigned int itemSize);
+extern void * mqttThread(void *arg0);
 
 /* Stack size in bytes */
-#define THREADSTACKSIZE   1024
+#define THREADSTACKSIZE   4096
 
-QueueHandle_t sensor_handle;
-QueueHandle_t uart_handle;
+extern void timer1000Init();
+extern void debugInit();
+
+extern QueueHandle_t createSensorQueue(unsigned int queueLen, unsigned int itemSize);
+extern QueueHandle_t createQueue(unsigned int queueLen, unsigned int itemSize);
+
+extern int createSensorThread(int threadStackSize, int prio);
+extern int createTask2Thread(int threadStackSize, int prio);
+extern int createReceiveThread(int threadStackSize, int prio);
+
+
+//Version2
+QueueHandle_t receive_handle;
+
+//Publish Queue
+QueueHandle_t publish_handle;
 
 /*
  *  ======== main ========
  */
-int main(void) {
+int main(void)
+{
+    pthread_t thread;
+    pthread_attr_t pAttrs;
+    struct sched_param priParam;
+    int retc;
+    int detachState;
 
-    /* initialize the system locks */
-#ifdef __ICCARM__
-    __iar_Initlocks();
-#endif
-
+    /* Call board init functions */
     Board_init();
     debugInit();
+    GPIO_init();
 
-    sensor_handle = createSensorQueue(10, sizeof(struct sensorQueueStruct));
-    uart_handle = createUARTQueue(10, sizeof(struct uartQueueStruct));
+    //createArmStatusThread(THREADSTACKSIZE,1);
 
-    if(sensor_handle == NULL)
-        return (1);
-    if(uart_handle == NULL)
+    //Version2
+    receive_handle = createQueue(5, sizeof(struct receiveQueueStruct));
+
+    if (receive_handle == NULL)
         return(1);
 
-    timer70Init();
-    timer500Init();
+    publish_handle = createQueue(5, sizeof(struct publishQueueStruct));
 
-    createSensorThread(THREADSTACKSIZE, 1);
-    createUARTThread(THREADSTACKSIZE, 1);
+    if(publish_handle == NULL)
+        return(1);
+
+    //version2
+    timer1000Init();
+
+    //version2
+    createReceiveThread(THREADSTACKSIZE, 1);
+
+    //overall mqtt thread for all TI's
+    /* Set priority and stack size attributes */
+    pthread_attr_init(&pAttrs);
+    priParam.sched_priority = 1;
+
+    detachState = PTHREAD_CREATE_DETACHED;
+    retc = pthread_attr_setdetachstate(&pAttrs, detachState);
+    if(retc != 0)
+    {
+        /* pthread_attr_setdetachstate() failed */
+        while(1)
+        {
+            ;
+        }
+    }
+
+    pthread_attr_setschedparam(&pAttrs, &priParam);
+
+    retc |= pthread_attr_setstacksize(&pAttrs, THREADSTACKSIZE);
+    if(retc != 0)
+    {
+        /* pthread_attr_setstacksize() failed */
+        while(1)
+        {
+            ;
+        }
+    }
+
+    retc = pthread_create(&thread, &pAttrs, mqttThread, NULL);
+    if(retc != 0)
+    {
+        /* pthread_create() failed */
+        while(1)
+        {
+            ;
+        }
+    }
 
 
 
@@ -103,6 +157,23 @@ int main(void) {
 
 //*****************************************************************************
 //
+//! \brief Application defined malloc failed hook
+//!
+//! \param  none
+//!
+//! \return none
+//!
+//*****************************************************************************
+void vApplicationMallocFailedHook()
+{
+    /* Handle Memory Allocation Errors */
+    while(1)
+    {
+    }
+}
+
+//*****************************************************************************
+//
 //! \brief Application defined stack overflow hook
 //!
 //! \param  none
@@ -110,10 +181,77 @@ int main(void) {
 //! \return none
 //!
 //*****************************************************************************
-void vApplicationStackOverflowHook(TaskHandle_t pxTask, char *pcTaskName)
+void vApplicationStackOverflowHook(TaskHandle_t pxTask,
+                                   char *pcTaskName)
 {
     //Handle FreeRTOS Stack Overflow
     while(1)
     {
     }
 }
+
+void vApplicationTickHook(void)
+{
+    /*
+     * This function will be called by each tick interrupt if
+     * configUSE_TICK_HOOK is set to 1 in FreeRTOSConfig.h.  User code can be
+     * added here, but the tick hook is called from an interrupt context, so
+     * code must not attempt to block, and only the interrupt safe FreeRTOS API
+     * functions can be used (those that end in FromISR()).
+     */
+}
+
+void vPreSleepProcessing(uint32_t ulExpectedIdleTime)
+{
+}
+
+//*****************************************************************************
+//
+//! \brief Application defined idle task hook
+//!
+//! \param  none
+//!
+//! \return none
+//!
+//*****************************************************************************
+void
+vApplicationIdleHook(void)
+{
+    /* Handle Idle Hook for Profiling, Power Management etc */
+}
+
+//*****************************************************************************
+//
+//! \brief  Overwrite the GCC _sbrk function which check the heap limit related
+//!         to the stack pointer.
+//!         In case of freertos this checking will fail.
+//! \param  none
+//!
+//! \return none
+//!
+//*****************************************************************************
+#if defined (__GNUC__)
+void * _sbrk(uint32_t delta)
+{
+    extern char _end;     /* Defined by the linker */
+    extern char __HeapLimit;
+    static char *heap_end;
+    static char *heap_limit;
+    char *prev_heap_end;
+
+    if(heap_end == 0)
+    {
+        heap_end = &_end;
+        heap_limit = &__HeapLimit;
+    }
+
+    prev_heap_end = heap_end;
+    if(prev_heap_end + delta > heap_limit)
+    {
+        return((void *) -1L);
+    }
+    heap_end += delta;
+    return((void *) prev_heap_end);
+}
+
+#endif

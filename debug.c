@@ -50,7 +50,7 @@ void fatalError(unsigned int event){
     //must blink an LED
     while(1){
         //errorLED();
-        GPIO_toggle(CONFIG_GPIO_LED_0);
+
         vTaskDelay(1000);
     }
 
@@ -61,11 +61,11 @@ void debugInit(){
     GPIO_init();
 
     /* Configure the LED pin */
-    GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+
 
     /* Configure the GPIO pins */
     GPIO_setConfig(CONFIG_GPIO_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(CONFIG_GPIO_1, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+
     GPIO_setConfig(CONFIG_GPIO_2, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_setConfig(CONFIG_GPIO_3, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_setConfig(CONFIG_GPIO_4, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
@@ -74,7 +74,7 @@ void debugInit(){
     GPIO_setConfig(CONFIG_GPIO_7, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
 
     /* Turn off user LED */
-    GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_OFF);
+
 }
 
 void dbgGPIOWrite(unsigned int event){
@@ -91,7 +91,7 @@ void dbgGPIOWrite(unsigned int event){
 
     /* Turn on the pins representing event's value MSB = 6, LSB = 0 */
     GPIO_write(CONFIG_GPIO_0, bits[0]);
-    GPIO_write(CONFIG_GPIO_1, bits[1]);
+
     GPIO_write(CONFIG_GPIO_2, bits[2]);
     GPIO_write(CONFIG_GPIO_3, bits[3]);
     GPIO_write(CONFIG_GPIO_4, bits[4]);
